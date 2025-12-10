@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { ConditionGuard } from '../constants/auth.constant';
+import { AuthType, ConditionGuard } from '../constants/auth.constant';
 import {
   AuthTypeDecoratorPayload,
   AuthTypeType,
@@ -9,10 +9,10 @@ import {
 export const AUTH_TYPE_KEY = 'authType';
 
 export const Auth = (
-  authTypes: AuthTypeType[],
+  authTypes?: AuthTypeType[],
   options?: { condition: ConditionGuardType },
 ) =>
   SetMetadata<string, AuthTypeDecoratorPayload>(AUTH_TYPE_KEY, {
-    authTypes,
+    authTypes: authTypes ?? [AuthType.BEARER],
     options: options ?? { condition: ConditionGuard.AND },
   });
