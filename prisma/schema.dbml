@@ -1,0 +1,315 @@
+TablePartial id {
+  id int [pk, increment]
+}
+
+Enum UserStatus {
+  ACTIVE
+  BLOCKED
+}
+
+Enum VerificationCodeType {
+  REGISTER
+  FORGOT_PASSWORD
+}
+
+Enum OrderStatus {
+  PENDING_CONFIRMATION
+  PENDING_PICKUP
+  PENDING_DELIVERY
+  DELIVERED
+  RETURNED
+  CANCELLED
+}
+
+Table Language {
+  ~id
+  name string
+  code string [unique]
+
+  createdById int [ref: > User.id, null]
+  updatedById int [ref: > User.id, null]
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+  deletedAt datetime [null]
+}
+
+Table User {
+  ~id
+  email string [unique]
+  name string
+  password string
+  phoneNumber string
+  avatar string [null]
+  totpSecret string [null]
+  status UserStatus [default: 'ACTIVE']
+  roleId int [ref: > Role.id]
+  
+  createdById int [ref: > User.id, null]
+  updatedById int [ref: > User.id, null]
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+  deletedAt datetime [null]
+}
+
+Table UserTranslation {
+  ~id
+  userId int [ref: > User.id]
+  languageId int [ref: > Language.id]
+  address string [null]
+  description string [null]
+
+  createdById int [ref: > User.id, null]
+  updatedById int [ref: > User.id, null]
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+  deletedAt datetime [null]
+}
+
+Table VerificationCode {
+  ~id
+  email string
+  code string
+  type VerificationCodeType
+
+  expiresAt datetime
+  createdAt datetime [default: `now()`]
+
+  indexes {
+    (email, code, type)
+  }
+}
+
+Table RefreshToken {
+  token string [unique]
+  userId int [ref: > User.id]
+
+  expiresAt datetime
+  createdAt datetime [default: `now()`]
+}
+
+Table Permission {
+  ~id
+  name string
+  description string
+  path string
+  method string
+
+  createdById int [ref: > User.id, null]
+  updatedById int [ref: > User.id, null]
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+  deletedAt datetime [null]
+}
+
+Table Role {
+  ~id
+  name string
+  description string
+  isActive boolean [default: true]
+
+  createdById int [ref: > User.id, null]
+  updatedById int [ref: > User.id, null]
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+  deletedAt datetime [null]
+}
+
+Table Product {
+  ~id
+  basePrice float
+  virtualPrice float
+  brandId int [ref: > Brand.id]
+
+  createdById int [ref: > User.id, null]
+  updatedById int [ref: > User.id, null]
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+  deletedAt datetime [null]
+}
+
+Table ProductTranslation {
+  ~id
+  productId int [ref: > Product.id]
+  languageId int [ref: > Language.id]
+  name string
+  description string
+
+  createdById int [ref: > User.id, null]
+  updatedById int [ref: > User.id, null]
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+  deletedAt datetime [null]
+}
+
+Table Category {
+  ~id
+  parentCategoryId int [ref: > Category.id, null]
+
+  createdById int [ref: > User.id, null]
+  updatedById int [ref: > User.id, null]
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+  deletedAt datetime [null]
+}
+
+Table CategoryTranslation {
+  ~id
+  categoryId int [ref: > Category.id]
+  languageId int [ref: > Language.id]
+  name string
+  description string
+
+  createdById int [ref: > User.id, null]
+  updatedById int [ref: > User.id, null]
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+  deletedAt datetime [null]
+}
+
+Table Variant {
+  ~id
+  name string
+  productId int [ref: > Product.id]
+
+  createdById int [ref: > User.id, null]
+  updatedById int [ref: > User.id, null]
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+  deletedAt datetime [null]
+}
+
+Table VariantOption {
+  ~id
+  value string
+  variantId int [ref: > Variant.id]
+
+  createdById int [ref: > User.id, null]
+  updatedById int [ref: > User.id, null]
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+  deletedAt datetime [null]
+}
+
+Table Sku {
+  ~id
+  value string
+  price float
+  stock int
+  images string[]
+  productId int [ref: > Product.id]
+
+  createdById int [ref: > User.id, null]
+  updatedById int [ref: > User.id, null]
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+  deletedAt datetime [null]
+}
+
+Table Brand {
+  ~id
+  logo string
+
+  createdById int [ref: > User.id, null]
+  updatedById int [ref: > User.id, null]
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+  deletedAt datetime [null]
+}
+
+Table BrandTranslation {
+  ~id
+  brandId int [ref: > Brand.id]
+  languageId int [ref: > Language.id]
+  name string
+  description string
+
+  createdById int [ref: > User.id, null]
+  updatedById int [ref: > User.id, null]
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+  deletedAt datetime [null]
+}
+
+Table CartItem {
+  ~id
+  quantity int
+  skuId int [ref: > Sku.id]
+  userId int [ref: > User.id]
+
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+}
+
+Table ProductSkuSnapshot {
+  ~id
+  productName string
+  price float
+  images string[]
+  skuValue string
+  skuId int [ref: > Sku.id]
+  orderId int [ref: > Order.id]
+  createdAt datetime [default: `now()`]
+}
+
+Table Order {
+  ~id
+  userId int [ref: > User.id]
+  status OrderStatus
+
+  createdById int [ref: > User.id, null]
+  updatedById int [ref: > User.id, null]
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+  deletedAt datetime [null]
+}
+
+Table Review {
+  ~id
+  content string
+  rating int
+  productId int [ref: > Product.id]
+  userId int [ref: > User.id]
+
+  createdAt datetime [default: `now()`]
+  updatedAt datetime
+}
+
+Table PaymentTransaction {
+  ~id
+  gateway string
+  transactionDate datetime [default: `now()`]
+  accountNumber string
+  subAccount string [null]
+  amountIn int [default: 0]
+  amountOut int [default: 0]
+  accumulated int [default: 0]
+  code string [null]
+  transactionContent string [null]
+  referenceNumber string [null]
+  body string [null]
+  createdAt datetime [default: `now()`]
+}
+
+Table Message {
+  ~id
+  fromUserId int [ref: > User.id]
+  toUserId int [ref: > User.id]
+  content string
+  readAt datetime [null]
+}
+
+// Many-to-Many Relationships
+Table ProductsCategories {
+  productId int [ref: > Product.id]
+  categoryId int [ref: > Category.id]
+}
+
+Table PermissionsRoles {
+  permissionId int [ref: > Permission.id]
+  roleId int [ref: > Role.id]
+}
+
+Table SkusVariantOptions {
+  skuId int [ref: > Sku.id]
+  variantOptionId int [ref: > VariantOption.id]
+}
