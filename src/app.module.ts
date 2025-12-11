@@ -1,12 +1,20 @@
 import { Module } from '@nestjs/common';
+import { APP_PIPE } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './routes/auth/auth.module';
+import { CustomZodValidationPipe } from './shared/pipes/custom-zod-validation.pipe';
 import { SharedModule } from './shared/shared.module';
 
 @Module({
   imports: [SharedModule, AuthModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_PIPE,
+      useClass: CustomZodValidationPipe,
+    },
+  ],
 })
 export class AppModule {}
