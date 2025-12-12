@@ -1,11 +1,11 @@
 import { UnprocessableEntityException } from '@nestjs/common';
-import { createZodValidationPipe } from 'nestjs-zod';
+import { createZodValidationPipe, ZodValidationPipe } from 'nestjs-zod';
 import { ZodError } from 'zod';
 
-type ZodValidationPipeClass = ReturnType<typeof createZodValidationPipe>;
-
-export const CustomZodValidationPipe: ZodValidationPipeClass =
+export const CustomZodValidationPipe: typeof ZodValidationPipe =
   createZodValidationPipe({
     createValidationException: (error: ZodError) =>
-      new UnprocessableEntityException('Ooops'),
+      new UnprocessableEntityException(
+        error.issues.map((issue) => ({ ...issue, path: issue.path.join('.') })),
+      ),
   });
