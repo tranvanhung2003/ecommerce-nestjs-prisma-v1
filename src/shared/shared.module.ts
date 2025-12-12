@@ -1,7 +1,8 @@
 import { ClassProvider, Global, Module, Type } from '@nestjs/common';
-import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { ZodSerializerInterceptor } from 'nestjs-zod';
+import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { AccessTokenGuard } from './guards/access-token.guard';
 import { ApiKeyGuard } from './guards/api-key.guard';
 import { AuthenticationGuard } from './guards/authentication.guard';
@@ -28,6 +29,9 @@ const sharedAppInterceptors: Type[] = [
 
 // Global pipes
 const sharedAppPipes: Type[] = [CustomZodValidationPipe];
+
+// Global filters
+const sharedAppFilters: Type[] = [HttpExceptionFilter];
 
 //
 
@@ -59,6 +63,12 @@ const appPipes: ClassProvider[] = sharedAppPipes.map((pipe) => ({
   useClass: pipe,
 }));
 
+// Register global filters
+const appFilters: ClassProvider[] = sharedAppFilters.map((filter) => ({
+  provide: APP_FILTER,
+  useClass: filter,
+}));
+
 @Global()
 @Module({
   imports: [JwtModule],
@@ -68,6 +78,7 @@ const appPipes: ClassProvider[] = sharedAppPipes.map((pipe) => ({
     ...appGuards,
     ...appInterceptors,
     ...appPipes,
+    ...appFilters,
   ],
   exports: [...sharedServices],
 })

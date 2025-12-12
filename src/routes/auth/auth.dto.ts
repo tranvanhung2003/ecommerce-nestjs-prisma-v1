@@ -1,5 +1,25 @@
 import { createZodDto } from 'nestjs-zod';
+import { User, UserStatus } from 'src/generated/prisma/client';
 import z from 'zod';
+
+const UserSchema = z.object({
+  id: z.number(),
+  email: z.email(),
+  name: z.string(),
+  phoneNumber: z.string(),
+  avatar: z.string().nullable(),
+  status: z.enum(UserStatus),
+  roleId: z.number(),
+  createdById: z.number().nullable(),
+  updatedById: z.number().nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  deletedAt: z.date().nullable(),
+});
+
+export class UserDto
+  extends createZodDto(UserSchema)
+  implements Omit<User, 'password' | 'totpSecret'> {}
 
 const RegisterSchema = z
   .object({

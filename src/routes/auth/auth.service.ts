@@ -42,6 +42,10 @@ export class AuthService {
           phoneNumber: registerDto.phoneNumber,
           roleId: clientRoleId,
         },
+        omit: {
+          password: true,
+          totpSecret: true,
+        },
       });
 
       return user;
