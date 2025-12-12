@@ -17,11 +17,7 @@ const UserSchema = z.object({
   deletedAt: z.date().nullable(),
 });
 
-export class UserDto
-  extends createZodDto(UserSchema)
-  implements Omit<User, 'password' | 'totpSecret'> {}
-
-const RegisterSchema = z
+const RegisterBodySchema = z
   .object({
     email: z.email(),
     password: z.string().min(6).max(100),
@@ -40,4 +36,8 @@ const RegisterSchema = z
     }
   });
 
-export class RegisterDto extends createZodDto(RegisterSchema) {}
+export class RegisterBodyDto extends createZodDto(RegisterBodySchema) {}
+
+export class RegisterResponseDto
+  extends createZodDto(UserSchema)
+  implements Omit<User, 'password' | 'totpSecret'> {}
