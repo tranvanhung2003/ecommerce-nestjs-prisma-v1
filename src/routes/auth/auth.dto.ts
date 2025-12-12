@@ -38,6 +38,6 @@ const RegisterBodySchema = z
 
 export class RegisterBodyDto extends createZodDto(RegisterBodySchema) {}
 
-export class RegisterResponseDto
+export class RegisterResDto
   extends createZodDto(UserSchema)
   implements Omit<User, 'password' | 'totpSecret'> {}
