@@ -2,6 +2,7 @@ import { ClassProvider, Global, Module, Type } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { ZodSerializerInterceptor } from 'nestjs-zod';
+import { CatchEverythingFilter } from './filters/catch-everything.filter';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { AccessTokenGuard } from './guards/access-token.guard';
 import { ApiKeyGuard } from './guards/api-key.guard';
@@ -31,7 +32,7 @@ const sharedAppInterceptors: Type[] = [
 const sharedAppPipes: Type[] = [CustomZodValidationPipe];
 
 // Global filters
-const sharedAppFilters: Type[] = [HttpExceptionFilter];
+const sharedAppFilters: Type[] = [CatchEverythingFilter, HttpExceptionFilter];
 
 //
 
