@@ -45,6 +45,7 @@ export class AuthService {
         omit: {
           password: true,
           totpSecret: true,
+          status: true,
         },
       });
 
