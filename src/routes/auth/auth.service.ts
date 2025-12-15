@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   ConflictException,
   Injectable,
@@ -17,36 +17,31 @@ import { HashingService } from 'src/shared/services/hashing.service';
 import { PrismaService } from 'src/shared/services/prisma.service';
 import { TokenService } from 'src/shared/services/token.service';
 import { EncodedPayload } from 'src/shared/types/jwt.type';
-import { RegisterDto } from './auth.dto';
+import { RegisterType } from './auth.model';
+import { AuthRepository } from './auth.repository';
 import { RolesService } from './roles.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly hashingService: HashingService,
-    private readonly prisma: PrismaService,
-    private readonly tokenService: TokenService,
     private readonly rolesService: RolesService,
+    private readonly prisma: PrismaService,
+    private readonly authRepository: AuthRepository,
+    private readonly hashingService: HashingService,
+    private readonly tokenService: TokenService,
   ) {}
 
-  async register(registerDto: RegisterDto) {
+  async register(registerData: RegisterType) {
     try {
+      const { confirmPassword, ...restRegisterData } = registerData;
       const clientRoleId = this.rolesService.getClientRoleId();
       const hashedPassword = await this.hashingService.hash(
-        registerDto.password,
+        restRegisterData.password,
       );
-      const user = await this.prisma.user.create({
-        data: {
-          email: registerDto.email,
-          password: hashedPassword,
-          name: registerDto.name,
-          phoneNumber: registerDto.phoneNumber,
-          roleId: clientRoleId,
-        },
-        omit: {
-          password: true,
-          totpSecret: true,
-        },
+      const user = await this.authRepository.createUser({
+        ...restRegisterData,
+        password: hashedPassword,
+        roleId: clientRoleId,
       });
 
       return user;
@@ -61,9 +56,9 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: any) {
+  async login(loginData: any) {
     const user = await this.prisma.user.findUnique({
-      where: { email: loginDto.email },
+      where: { email: loginData.email },
     });
 
     if (!user) {
@@ -71,7 +66,7 @@ export class AuthService {
     }
 
     const isPasswordValid = await this.hashingService.compare(
-      loginDto.password,
+      loginData.password,
       user.password,
     );
 
@@ -108,9 +103,9 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async refreshToken(refreshTokenDto: any) {
+  async refreshToken(refreshTokenData: any) {
     try {
-      const { refreshToken } = refreshTokenDto;
+      const { refreshToken } = refreshTokenData;
 
       // Kiểm tra refreshToken có hợp lệ không
       const { userId } =
@@ -139,9 +134,9 @@ export class AuthService {
     }
   }
 
-  async logout(logoutDto: any) {
+  async logout(logoutData: any) {
     try {
-      const { refreshToken } = logoutDto;
+      const { refreshToken } = logoutData;
 
       await this.tokenService.verifyRefreshToken(refreshToken);
 

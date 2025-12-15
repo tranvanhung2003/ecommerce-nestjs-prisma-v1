@@ -49,3 +49,13 @@ export const RegisterResSchema = UserSchema.omit({
 });
 
 export type RegisterResType = z.infer<typeof RegisterResSchema>;
+
+export const CreateUserSchema = UserSchema.pick({
+  email: true,
+  name: true,
+  password: true,
+  phoneNumber: true,
+  roleId: true,
+});
+
+export type CreateUserType = z.infer<typeof CreateUserSchema>;
