@@ -17,6 +17,7 @@ import { HashingService } from 'src/shared/services/hashing.service';
 import { PrismaService } from 'src/shared/services/prisma.service';
 import { TokenService } from 'src/shared/services/token.service';
 import { EncodedPayload } from 'src/shared/types/jwt.type';
+import { RegisterDto } from './auth.dto';
 import { RolesService } from './roles.service';
 
 @Injectable()
@@ -28,7 +29,7 @@ export class AuthService {
     private readonly rolesService: RolesService,
   ) {}
 
-  async register(registerDto: any) {
+  async register(registerDto: RegisterDto) {
     try {
       const clientRoleId = this.rolesService.getClientRoleId();
       const hashedPassword = await this.hashingService.hash(
@@ -45,7 +46,6 @@ export class AuthService {
         omit: {
           password: true,
           totpSecret: true,
-          status: true,
         },
       });
 
