@@ -1,7 +1,12 @@
-import { User } from 'src/generated/prisma/client';
-import { UserStatus } from 'src/generated/prisma/enums';
+import {
+  User,
+  UserStatus,
+  VerificationCode,
+  VerificationCodeKind,
+} from 'src/generated/prisma/client';
 import z from 'zod';
 
+// UserSchema and UserType
 export const UserSchema = z.object({
   id: z.number(),
   email: z.email(),
@@ -21,6 +26,7 @@ export const UserSchema = z.object({
 
 export type UserType = z.infer<typeof UserSchema>;
 
+// RegisterSchema (strict schema) and RegisterType
 export const RegisterSchema = UserSchema.pick({
   email: true,
   password: true,
@@ -43,6 +49,7 @@ export const RegisterSchema = UserSchema.pick({
 
 export type RegisterType = z.infer<typeof RegisterSchema>;
 
+// RegisterResSchema and RegisterResType
 export const RegisterResSchema = UserSchema.omit({
   password: true,
   totpSecret: true,
@@ -50,6 +57,7 @@ export const RegisterResSchema = UserSchema.omit({
 
 export type RegisterResType = z.infer<typeof RegisterResSchema>;
 
+// CreateUserSchema and CreateUserType
 export const CreateUserSchema = UserSchema.pick({
   email: true,
   name: true,
@@ -59,3 +67,23 @@ export const CreateUserSchema = UserSchema.pick({
 });
 
 export type CreateUserType = z.infer<typeof CreateUserSchema>;
+
+// VerificationCodeSchema and VerificationCodeType
+export const VerificationCodeSchema = z.object({
+  id: z.number(),
+  email: z.email(),
+  code: z.string().length(6),
+  type: z.enum(VerificationCodeKind),
+  expiresAt: z.date(),
+  createdAt: z.date(),
+}) satisfies z.ZodType<VerificationCode>;
+
+export type VerificationCodeType = z.infer<typeof VerificationCodeSchema>;
+
+// SendOtpSchema (strict schema) and SendOtpType
+export const SendOtpSchema = VerificationCodeSchema.pick({
+  email: true,
+  type: true,
+}).strict();
+
+export type SendOtpType = z.infer<typeof SendOtpSchema>;

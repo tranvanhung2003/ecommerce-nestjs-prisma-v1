@@ -17,7 +17,7 @@ import { HashingService } from 'src/shared/services/hashing.service';
 import { PrismaService } from 'src/shared/services/prisma.service';
 import { TokenService } from 'src/shared/services/token.service';
 import { EncodedPayload } from 'src/shared/types/jwt.type';
-import { RegisterType } from './auth.model';
+import { RegisterType, SendOtpType } from './auth.model';
 import { AuthRepository } from './auth.repository';
 import { RolesService } from './roles.service';
 
@@ -54,6 +54,10 @@ export class AuthService {
 
       throw new InternalServerErrorException('Lỗi máy chủ nội bộ');
     }
+  }
+
+  async sendOtp(sendOtpData: SendOtpType) {
+    return Promise.resolve(sendOtpData);
   }
 
   async login(loginData: any) {
