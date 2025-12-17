@@ -8,12 +8,13 @@ import z from 'zod';
 // RegisterSchema (strict schema) and RegisterType
 export const RegisterSchema = UserSchema.pick({
   email: true,
-  password: true,
   name: true,
+  password: true,
   phoneNumber: true,
 })
   .safeExtend({
     confirmPassword: z.string().min(6).max(100),
+    code: z.string().length(6),
   })
   .strict()
   .superRefine(({ password, confirmPassword }, ctx) => {

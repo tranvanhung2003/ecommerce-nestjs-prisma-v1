@@ -1,13 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import {
-  Injectable,
-  InternalServerErrorException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { addMilliseconds } from 'date-fns';
 import ms from 'ms';
+import { VerificationCodeKind } from 'src/generated/prisma/enums';
 import envConfig from 'src/shared/config';
 import {
   CustomUnprocessableEntityException,
@@ -38,11 +35,39 @@ export class AuthService {
 
   async register(registerData: RegisterType) {
     try {
-      const { confirmPassword, ...$registerData } = registerData;
+      const verificationCode =
+        await this.authRepository.findUniqueVerificationCode({
+          email: registerData.email,
+          code: registerData.code,
+          type: VerificationCodeKind.REGISTER,
+        });
+
+      if (!verificationCode) {
+        throw new CustomUnprocessableEntityException([
+          {
+            message: 'Mã OTP không hợp lệ',
+            path: 'code',
+          },
+        ]);
+      }
+
+      if (verificationCode.expiresAt < new Date()) {
+        throw new CustomUnprocessableEntityException([
+          {
+            message: 'Mã OTP đã hết hạn',
+            path: 'code',
+          },
+        ]);
+      }
+
       const clientRoleId = this.rolesService.getClientRoleId();
+
       const hashedPassword = await this.hashingService.hash(
-        $registerData.password,
+        registerData.password,
       );
+
+      const { confirmPassword, code, ...$registerData } = registerData;
+
       const user = await this.authRepository.createUser({
         ...$registerData,
         password: hashedPassword,
@@ -60,7 +85,7 @@ export class AuthService {
         ]);
       }
 
-      throw new InternalServerErrorException('Lỗi máy chủ nội bộ');
+      throw error;
     }
   }
 
