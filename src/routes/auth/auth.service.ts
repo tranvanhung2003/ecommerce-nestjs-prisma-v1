@@ -2,17 +2,20 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
-  ConflictException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { addMilliseconds } from 'date-fns';
+import ms from 'ms';
+import envConfig from 'src/shared/config';
 import {
   CustomUnprocessableEntityException,
-  isPrismaClientKnownRequestError,
+  generateOtp,
   isPrismaClientNotFoundError,
   isPrismaClientUniqueConstraintError,
 } from 'src/shared/helpers/helpers';
+import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
 import { HashingService } from 'src/shared/services/hashing.service';
 import { PrismaService } from 'src/shared/services/prisma.service';
 import { TokenService } from 'src/shared/services/token.service';
@@ -25,31 +28,36 @@ import { RolesService } from './roles.service';
 export class AuthService {
   constructor(
     private readonly rolesService: RolesService,
+    // todo: sẽ xóa prisma service sau khi hoàn thành refactor repository
     private readonly prisma: PrismaService,
     private readonly authRepository: AuthRepository,
     private readonly hashingService: HashingService,
     private readonly tokenService: TokenService,
+    private readonly sharedUserRepository: SharedUserRepository,
   ) {}
 
   async register(registerData: RegisterType) {
     try {
-      const { confirmPassword, ...restRegisterData } = registerData;
+      const { confirmPassword, ...$registerData } = registerData;
       const clientRoleId = this.rolesService.getClientRoleId();
       const hashedPassword = await this.hashingService.hash(
-        restRegisterData.password,
+        $registerData.password,
       );
       const user = await this.authRepository.createUser({
-        ...restRegisterData,
+        ...$registerData,
         password: hashedPassword,
         roleId: clientRoleId,
       });
 
       return user;
     } catch (error) {
-      if (isPrismaClientKnownRequestError(error)) {
-        if (isPrismaClientUniqueConstraintError(error)) {
-          throw new ConflictException('Email already exists');
-        }
+      if (isPrismaClientUniqueConstraintError(error)) {
+        throw new CustomUnprocessableEntityException([
+          {
+            message: 'Email đã tồn tại',
+            path: 'email',
+          },
+        ]);
       }
 
       throw new InternalServerErrorException('Lỗi máy chủ nội bộ');
@@ -57,7 +65,33 @@ export class AuthService {
   }
 
   async sendOtp(sendOtpData: SendOtpType) {
-    return Promise.resolve(sendOtpData);
+    const existUser = await this.sharedUserRepository.findUnique({
+      email: sendOtpData.email,
+    });
+
+    if (existUser) {
+      throw new CustomUnprocessableEntityException([
+        {
+          message: 'Email đã tồn tại',
+          path: 'email',
+        },
+      ]);
+    }
+
+    const otpCode = generateOtp();
+
+    const verificationCode =
+      await this.authRepository.createOrUpdateVerificationCode({
+        email: sendOtpData.email,
+        code: otpCode,
+        type: sendOtpData.type,
+        expiresAt: addMilliseconds(
+          new Date(),
+          ms(envConfig.OTP_EXPIRES_IN as ms.StringValue),
+        ),
+      });
+
+    return verificationCode;
   }
 
   async login(loginData: any) {
@@ -77,8 +111,8 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new CustomUnprocessableEntityException([
         {
-          field: 'password',
-          error: 'Password is incorrect',
+          message: 'Password is incorrect',
+          path: 'password',
         },
       ]);
     }
@@ -128,10 +162,8 @@ export class AuthService {
       // Tạo mới cặp accessToken và refreshToken
       return await this.generateTokens({ userId });
     } catch (error) {
-      if (isPrismaClientKnownRequestError(error)) {
-        if (isPrismaClientNotFoundError(error)) {
-          throw new UnauthorizedException('Refresh token has been revoked');
-        }
+      if (isPrismaClientNotFoundError(error)) {
+        throw new UnauthorizedException('Refresh token has been revoked');
       }
 
       throw new UnauthorizedException('Invalid refresh token');
@@ -150,10 +182,8 @@ export class AuthService {
 
       return { message: 'Logout successful' };
     } catch (error) {
-      if (isPrismaClientKnownRequestError(error)) {
-        if (isPrismaClientNotFoundError(error)) {
-          throw new UnauthorizedException('Refresh token has been revoked');
-        }
+      if (isPrismaClientNotFoundError(error)) {
+        throw new UnauthorizedException('Refresh token has been revoked');
       }
 
       throw new UnauthorizedException('Invalid refresh token');

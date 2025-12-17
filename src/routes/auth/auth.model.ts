@@ -1,30 +1,9 @@
 import {
-  User,
-  UserStatus,
   VerificationCode,
   VerificationCodeKind,
 } from 'src/generated/prisma/client';
+import { UserSchema } from 'src/shared/models/shared-user.model';
 import z from 'zod';
-
-// UserSchema and UserType
-export const UserSchema = z.object({
-  id: z.number(),
-  email: z.email(),
-  name: z.string().min(1).max(100),
-  password: z.string().min(6).max(100),
-  phoneNumber: z.string().min(9).max(15),
-  avatar: z.string().nullable(),
-  totpSecret: z.string().nullable(),
-  status: z.enum(UserStatus),
-  roleId: z.number(),
-  createdById: z.number().nullable(),
-  updatedById: z.number().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-  deletedAt: z.date().nullable(),
-}) satisfies z.ZodType<User>;
-
-export type UserType = z.infer<typeof UserSchema>;
 
 // RegisterSchema (strict schema) and RegisterType
 export const RegisterSchema = UserSchema.pick({
@@ -79,6 +58,18 @@ export const VerificationCodeSchema = z.object({
 }) satisfies z.ZodType<VerificationCode>;
 
 export type VerificationCodeType = z.infer<typeof VerificationCodeSchema>;
+
+// CreateVerificationCodeSchema and CreateVerificationCodeType
+export const CreateVerificationCodeSchema = VerificationCodeSchema.pick({
+  email: true,
+  code: true,
+  type: true,
+  expiresAt: true,
+});
+
+export type CreateVerificationCodeType = z.infer<
+  typeof CreateVerificationCodeSchema
+>;
 
 // SendOtpSchema (strict schema) and SendOtpType
 export const SendOtpSchema = VerificationCodeSchema.pick({

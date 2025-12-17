@@ -9,12 +9,18 @@ import { ApiKeyGuard } from './guards/api-key.guard';
 import { AuthenticationGuard } from './guards/authentication.guard';
 import { TransformInterceptor } from './interceptors/transform.interceptor';
 import { CustomZodValidationPipe } from './pipes/custom-zod-validation.pipe';
+import { SharedUserRepository } from './repositories/shared-user.repository';
 import { HashingService } from './services/hashing.service';
 import { PrismaService } from './services/prisma.service';
 import { TokenService } from './services/token.service';
 
 // Shared services to be exported
-const sharedServices: Type[] = [PrismaService, HashingService, TokenService];
+const sharedServices: Type[] = [
+  PrismaService,
+  HashingService,
+  TokenService,
+  SharedUserRepository,
+];
 
 // Services provided but not exported
 const provideOnlyServices: Type[] = [AccessTokenGuard, ApiKeyGuard];
