@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { VerificationCodeKind } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/shared/services/prisma.service';
+import z from 'zod';
 import {
   CreateUserSchema,
   CreateUserType,
@@ -10,14 +11,17 @@ import {
   VerificationCodeType,
 } from './auth.model';
 
-type FindUniqueArgs =
-  | { id: number }
-  | { email: string }
-  | {
-      email: string;
-      code: string;
-      type: VerificationCodeKind;
-    };
+const FindUniqueArgsSchema = z.union([
+  z.object({
+    email: z.email(),
+    code: z.string(),
+    type: z.enum(VerificationCodeKind),
+  }),
+  z.object({ id: z.number() }),
+  z.object({ email: z.email() }),
+]);
+
+type FindUniqueArgsType = z.infer<typeof FindUniqueArgsSchema>;
 
 @Injectable()
 export class AuthRepository {
@@ -50,10 +54,12 @@ export class AuthRepository {
   }
 
   async findUniqueVerificationCode(
-    findUniqueArgs: FindUniqueArgs,
+    findUniqueArgsData: FindUniqueArgsType,
   ): Promise<VerificationCodeType | null> {
+    const $findUniqueArgsData = FindUniqueArgsSchema.parse(findUniqueArgsData);
+
     return this.prisma.verificationCode.findUnique({
-      where: findUniqueArgs,
+      where: $findUniqueArgsData,
     });
   }
 }

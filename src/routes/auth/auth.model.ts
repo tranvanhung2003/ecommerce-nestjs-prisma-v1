@@ -16,7 +16,6 @@ export const RegisterSchema = UserSchema.pick({
     confirmPassword: z.string().min(6).max(100),
     code: z.string().length(6),
   })
-  .strict()
   .superRefine(({ password, confirmPassword }, ctx) => {
     if (password !== confirmPassword) {
       ctx.addIssue({
@@ -76,6 +75,6 @@ export type CreateVerificationCodeType = z.infer<
 export const SendOtpSchema = VerificationCodeSchema.pick({
   email: true,
   type: true,
-}).strict();
+});
 
 export type SendOtpType = z.infer<typeof SendOtpSchema>;
