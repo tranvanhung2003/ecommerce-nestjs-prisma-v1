@@ -5,7 +5,7 @@ import {
 import { UserSchema } from 'src/shared/models/shared-user.model';
 import z from 'zod';
 
-// RegisterSchema (strict schema) and RegisterType
+// Register
 export const RegisterSchema = UserSchema.pick({
   email: true,
   name: true,
@@ -28,7 +28,7 @@ export const RegisterSchema = UserSchema.pick({
 
 export type RegisterType = z.infer<typeof RegisterSchema>;
 
-// RegisterResSchema and RegisterResType
+// RegisterRes
 export const RegisterResSchema = UserSchema.omit({
   password: true,
   totpSecret: true,
@@ -47,7 +47,7 @@ export const CreateUserSchema = UserSchema.pick({
 
 export type CreateUserType = z.infer<typeof CreateUserSchema>;
 
-// VerificationCodeSchema and VerificationCodeType
+// VerificationCode
 export const VerificationCodeSchema = z.object({
   id: z.number(),
   email: z.email(),
@@ -59,7 +59,7 @@ export const VerificationCodeSchema = z.object({
 
 export type VerificationCodeType = z.infer<typeof VerificationCodeSchema>;
 
-// CreateVerificationCodeSchema and CreateVerificationCodeType
+// CreateVerificationCode
 export const CreateVerificationCodeSchema = VerificationCodeSchema.pick({
   email: true,
   code: true,
@@ -71,7 +71,7 @@ export type CreateVerificationCodeType = z.infer<
   typeof CreateVerificationCodeSchema
 >;
 
-// SendOtpSchema (strict schema) and SendOtpType
+// SendOtp
 export const SendOtpSchema = VerificationCodeSchema.pick({
   email: true,
   type: true,

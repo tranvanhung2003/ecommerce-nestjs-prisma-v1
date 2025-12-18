@@ -1,7 +1,7 @@
 import { User, UserStatus } from 'src/generated/prisma/client';
 import z from 'zod';
 
-// UserSchema and UserType
+// User
 export const UserSchema = z.object({
   id: z.number(),
   email: z.email(),
