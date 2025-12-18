@@ -36,7 +36,7 @@ export const RegisterResSchema = UserSchema.omit({
 
 export type RegisterResType = z.infer<typeof RegisterResSchema>;
 
-// CreateUserSchema and CreateUserType
+// CreateUser
 export const CreateUserSchema = UserSchema.pick({
   email: true,
   name: true,
