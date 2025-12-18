@@ -13,6 +13,7 @@ import {
   isPrismaClientUniqueConstraintError,
 } from 'src/shared/helpers/helpers';
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
+import { EmailService } from 'src/shared/services/email.service';
 import { HashingService } from 'src/shared/services/hashing.service';
 import { PrismaService } from 'src/shared/services/prisma.service';
 import { TokenService } from 'src/shared/services/token.service';
@@ -31,6 +32,7 @@ export class AuthService {
     private readonly hashingService: HashingService,
     private readonly tokenService: TokenService,
     private readonly sharedUserRepository: SharedUserRepository,
+    private readonly emailService: EmailService,
   ) {}
 
   async register(registerData: RegisterType) {
@@ -115,6 +117,20 @@ export class AuthService {
           ms(envConfig.OTP_EXPIRES_IN as ms.StringValue),
         ),
       });
+
+    const { data: _, error } = await this.emailService.sendOtp({
+      email: sendOtpData.email,
+      code: otpCode,
+    });
+
+    if (error) {
+      throw new CustomUnprocessableEntityException([
+        {
+          message: 'Gửi mã OTP thất bại, vui lòng thử lại sau',
+          path: 'code',
+        },
+      ]);
+    }
 
     return verificationCode;
   }

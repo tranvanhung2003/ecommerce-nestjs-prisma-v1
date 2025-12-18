@@ -10,6 +10,7 @@ import { AuthenticationGuard } from './guards/authentication.guard';
 import { TransformInterceptor } from './interceptors/transform.interceptor';
 import { CustomZodValidationPipe } from './pipes/custom-zod-validation.pipe';
 import { SharedUserRepository } from './repositories/shared-user.repository';
+import { EmailService } from './services/email.service';
 import { HashingService } from './services/hashing.service';
 import { PrismaService } from './services/prisma.service';
 import { TokenService } from './services/token.service';
@@ -20,6 +21,7 @@ const sharedServices: Type[] = [
   HashingService,
   TokenService,
   SharedUserRepository,
+  EmailService,
 ];
 
 // Services provided but not exported
