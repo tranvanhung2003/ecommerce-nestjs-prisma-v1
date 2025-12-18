@@ -11,7 +11,7 @@ import {
   VerificationCodeType,
 } from './auth.model';
 
-const FindUniqueArgsSchema = z.union([
+const FindUniqueSchema = z.union([
   z.object({
     email: z.email(),
     code: z.string(),
@@ -21,7 +21,7 @@ const FindUniqueArgsSchema = z.union([
   z.object({ email: z.email() }),
 ]);
 
-type FindUniqueArgsType = z.infer<typeof FindUniqueArgsSchema>;
+type FindUniqueType = z.infer<typeof FindUniqueSchema>;
 
 @Injectable()
 export class AuthRepository {
@@ -54,12 +54,12 @@ export class AuthRepository {
   }
 
   async findUniqueVerificationCode(
-    findUniqueArgsData: FindUniqueArgsType,
+    findUniqueData: FindUniqueType,
   ): Promise<VerificationCodeType | null> {
-    const $findUniqueArgsData = FindUniqueArgsSchema.parse(findUniqueArgsData);
+    const $findUniqueData = FindUniqueSchema.parse(findUniqueData);
 
     return this.prisma.verificationCode.findUnique({
-      where: $findUniqueArgsData,
+      where: $findUniqueData,
     });
   }
 }
