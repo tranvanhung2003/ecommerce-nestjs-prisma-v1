@@ -42,20 +42,3 @@ export function isPrismaClientNotFoundError(
 export function generateOtp() {
   return randomInt(100000, 1000000).toString();
 }
-
-export function compileHtmlTemplate(
-  htmlTemplate: string,
-  variables: Record<string, string>,
-) {
-  // let compiledTemplate = htmlTemplate;
-  // for (const [key, value] of Object.entries(variables)) {
-  //   const placeholder = `{{${key}}}`;
-  //   compiledTemplate = compiledTemplate.replaceAll(placeholder, value);
-  // }
-  // return compiledTemplate;
-  return Object.entries(variables).reduce((compiledTemplate, [key, value]) => {
-    const placeholder = `{{${key}}}`;
-
-    return compiledTemplate.replaceAll(placeholder, value);
-  }, htmlTemplate);
-}

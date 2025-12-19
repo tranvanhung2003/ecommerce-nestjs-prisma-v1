@@ -8,35 +8,30 @@ import {
   Section,
   Text,
 } from '@react-email/components';
+import React from 'react';
 
-interface PlaidVerifyIdentityEmailProps {
-  validationCode?: string;
+interface OtpEmailProps {
+  title: string;
+  code: string;
 }
 
-const baseUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : '';
+const logoUrl =
+  'https://images.icon-icons.com/2415/PNG/512/react_original_wordmark_logo_icon_146375.png';
 
-export const PlaidVerifyIdentityEmail = ({
-  validationCode,
-}: PlaidVerifyIdentityEmailProps) => (
+export const OtpEmail = ({ title, code }: OtpEmailProps) => (
   <Html>
-    <Head />
+    <Head>
+      <title>{title}</title>
+    </Head>
     <Body style={main}>
       <Container style={container}>
-        <Img
-          src={`${baseUrl}/static/plaid-logo.png`}
-          width="212"
-          height="88"
-          alt="Plaid"
-          style={logo}
-        />
+        <Img src={logoUrl} width="212" height="88" alt="Logo" style={logo} />
         <Text style={tertiary}>Mã xác thực OTP</Text>
         <Heading style={secondary}>
           Hãy nhập mã xác thực OTP sau vào website
         </Heading>
         <Section style={codeContainer}>
-          <Text style={code}>{validationCode}</Text>
+          <Text style={codeStyle}>{code}</Text>
         </Section>
         <Text style={paragraph}>
           Nếu bạn không yêu cầu mã này, vui lòng bỏ qua email này.
@@ -47,11 +42,12 @@ export const PlaidVerifyIdentityEmail = ({
   </Html>
 );
 
-PlaidVerifyIdentityEmail.PreviewProps = {
-  validationCode: '144833',
-} as PlaidVerifyIdentityEmailProps;
+OtpEmail.PreviewProps = {
+  title: 'Mã OTP',
+  code: '123456',
+} as OtpEmailProps;
 
-export default PlaidVerifyIdentityEmail;
+export default OtpEmail;
 
 const main = {
   backgroundColor: '#ffffff',
@@ -71,11 +67,13 @@ const container = {
 
 const logo = {
   margin: '0 auto',
+  width: '88px',
+  height: '88px',
 };
 
 const tertiary = {
   color: '#0a85ea',
-  fontSize: '11px',
+  fontSize: '15px',
   fontWeight: 700,
   fontFamily: 'HelveticaNeue,Helvetica,Arial,sans-serif',
   height: '16px',
@@ -106,7 +104,7 @@ const codeContainer = {
   width: '280px',
 };
 
-const code = {
+const codeStyle = {
   color: '#000',
   display: 'inline-block',
   fontFamily: 'HelveticaNeue-Bold',
@@ -130,11 +128,6 @@ const paragraph = {
   padding: '0 40px',
   margin: '0',
   textAlign: 'center' as const,
-};
-
-const _link = {
-  color: '#444',
-  textDecoration: 'underline',
 };
 
 const footer = {
