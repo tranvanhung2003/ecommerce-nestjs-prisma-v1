@@ -13,24 +13,24 @@ const SendOtpSchema = z.object({
 
 type SendOtpPayload = z.infer<typeof SendOtpSchema>;
 
-const otpTemplatePath = path.resolve(
-  'src',
-  'shared',
-  'email-templates',
-  'otp.html',
-);
-
 @Injectable()
 export class EmailService {
+  private readonly subjectOtp = 'Mã OTP';
+  private readonly otpTemplatePath = path.resolve(
+    'src',
+    'shared',
+    'email-templates',
+    'otp.html',
+  );
+
   private readonly resend: Resend;
   private readonly fromEmail: string;
   private readonly otpTemplate: string;
-  private readonly subjectOtp = 'Mã OTP';
 
   constructor() {
     this.resend = new Resend(envConfig.RESEND_API_KEY);
     this.fromEmail = `Ecommerce <noreply@${envConfig.RESEND_DOMAIN_NAME}>`;
-    this.otpTemplate = fs.readFileSync(otpTemplatePath, 'utf8');
+    this.otpTemplate = fs.readFileSync(this.otpTemplatePath, 'utf8');
   }
 
   async sendOtp(sendOtpPayload: SendOtpPayload) {

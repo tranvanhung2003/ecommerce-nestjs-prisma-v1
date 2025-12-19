@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { compare, hash } from 'bcrypt';
 
-const saltRounds = 10;
-
 @Injectable()
 export class HashingService {
+  private readonly saltRounds = 10;
+
   async hash(value: string) {
-    return await hash(value, saltRounds);
+    return await hash(value, this.saltRounds);
   }
 
   async compare(value: string, hashedValue: string) {
