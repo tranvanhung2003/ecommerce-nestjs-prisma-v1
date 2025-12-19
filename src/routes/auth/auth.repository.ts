@@ -3,12 +3,12 @@ import { VerificationCodeKind } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/shared/services/prisma.service';
 import z from 'zod';
 import {
+  CreateUserPayload,
   CreateUserSchema,
-  CreateUserType,
+  CreateVerificationCodePayload,
   CreateVerificationCodeSchema,
-  CreateVerificationCodeType,
-  RegisterResType,
-  VerificationCodeType,
+  RegisterResPayload,
+  VerificationCodePayload,
 } from './auth.model';
 
 const FindUniqueSchema = z.union([
@@ -21,17 +21,19 @@ const FindUniqueSchema = z.union([
   z.object({ email: z.email() }),
 ]);
 
-type FindUniqueType = z.infer<typeof FindUniqueSchema>;
+type FindUniquePayload = z.infer<typeof FindUniqueSchema>;
 
 @Injectable()
 export class AuthRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createUser(createUserData: CreateUserType): Promise<RegisterResType> {
-    const $createUserData = CreateUserSchema.parse(createUserData);
+  async createUser(
+    createUserPayload: CreateUserPayload,
+  ): Promise<RegisterResPayload> {
+    const $createUserPayload = CreateUserSchema.parse(createUserPayload);
 
     return this.prisma.user.create({
-      data: $createUserData,
+      data: $createUserPayload,
       omit: {
         password: true,
         totpSecret: true,
@@ -40,26 +42,26 @@ export class AuthRepository {
   }
 
   async createOrUpdateVerificationCode(
-    createVerificationCodeData: CreateVerificationCodeType,
-  ): Promise<VerificationCodeType> {
-    const $createVerificationCodeData = CreateVerificationCodeSchema.parse(
-      createVerificationCodeData,
+    createVerificationCodePayload: CreateVerificationCodePayload,
+  ): Promise<VerificationCodePayload> {
+    const $createVerificationCodePayload = CreateVerificationCodeSchema.parse(
+      createVerificationCodePayload,
     );
 
     return this.prisma.verificationCode.upsert({
-      where: { email: $createVerificationCodeData.email },
-      update: $createVerificationCodeData,
-      create: $createVerificationCodeData,
+      where: { email: $createVerificationCodePayload.email },
+      update: $createVerificationCodePayload,
+      create: $createVerificationCodePayload,
     });
   }
 
   async findUniqueVerificationCode(
-    findUniqueData: FindUniqueType,
-  ): Promise<VerificationCodeType | null> {
-    const $findUniqueData = FindUniqueSchema.parse(findUniqueData);
+    findUniquePayload: FindUniquePayload,
+  ): Promise<VerificationCodePayload | null> {
+    const $findUniquePayload = FindUniqueSchema.parse(findUniquePayload);
 
     return this.prisma.verificationCode.findUnique({
-      where: $findUniqueData,
+      where: $findUniquePayload,
     });
   }
 }

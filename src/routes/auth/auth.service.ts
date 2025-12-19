@@ -18,7 +18,7 @@ import { HashingService } from 'src/shared/services/hashing.service';
 import { PrismaService } from 'src/shared/services/prisma.service';
 import { TokenService } from 'src/shared/services/token.service';
 import { EncodedPayload } from 'src/shared/types/jwt.type';
-import { RegisterType, SendOtpType } from './auth.model';
+import { RegisterPayload, SendOtpPayload } from './auth.model';
 import { AuthRepository } from './auth.repository';
 import { RolesService } from './roles.service';
 
@@ -35,12 +35,12 @@ export class AuthService {
     private readonly emailService: EmailService,
   ) {}
 
-  async register(registerData: RegisterType) {
+  async register(registerPayload: RegisterPayload) {
     try {
       const verificationCode =
         await this.authRepository.findUniqueVerificationCode({
-          email: registerData.email,
-          code: registerData.code,
+          email: registerPayload.email,
+          code: registerPayload.code,
           type: VerificationCodeKind.REGISTER,
         });
 
@@ -65,13 +65,13 @@ export class AuthService {
       const clientRoleId = this.rolesService.getClientRoleId();
 
       const hashedPassword = await this.hashingService.hash(
-        registerData.password,
+        registerPayload.password,
       );
 
-      const { confirmPassword, code, ...$registerData } = registerData;
+      const { confirmPassword, code, ...$registerPayload } = registerPayload;
 
       const user = await this.authRepository.createUser({
-        ...$registerData,
+        ...$registerPayload,
         password: hashedPassword,
         roleId: clientRoleId,
       });
@@ -91,9 +91,9 @@ export class AuthService {
     }
   }
 
-  async sendOtp(sendOtpData: SendOtpType) {
+  async sendOtp(sendOtpPayload: SendOtpPayload) {
     const existUser = await this.sharedUserRepository.findUnique({
-      email: sendOtpData.email,
+      email: sendOtpPayload.email,
     });
 
     if (existUser) {
@@ -109,9 +109,9 @@ export class AuthService {
 
     const verificationCode =
       await this.authRepository.createOrUpdateVerificationCode({
-        email: sendOtpData.email,
+        email: sendOtpPayload.email,
         code: otpCode,
-        type: sendOtpData.type,
+        type: sendOtpPayload.type,
         expiresAt: addMilliseconds(
           new Date(),
           ms(envConfig.OTP_EXPIRES_IN as ms.StringValue),
@@ -119,7 +119,7 @@ export class AuthService {
       });
 
     const { data: _, error } = await this.emailService.sendOtp({
-      email: sendOtpData.email,
+      email: sendOtpPayload.email,
       code: otpCode,
     });
 
@@ -135,9 +135,9 @@ export class AuthService {
     return verificationCode;
   }
 
-  async login(loginData: any) {
+  async login(loginPayload: any) {
     const user = await this.prisma.user.findUnique({
-      where: { email: loginData.email },
+      where: { email: loginPayload.email },
     });
 
     if (!user) {
@@ -145,7 +145,7 @@ export class AuthService {
     }
 
     const isPasswordValid = await this.hashingService.compare(
-      loginData.password,
+      loginPayload.password,
       user.password,
     );
 
@@ -182,9 +182,9 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async refreshToken(refreshTokenData: any) {
+  async refreshToken(refreshTokenPayload: any) {
     try {
-      const { refreshToken } = refreshTokenData;
+      const { refreshToken } = refreshTokenPayload;
 
       // Kiểm tra refreshToken có hợp lệ không
       const { userId } =
@@ -211,9 +211,9 @@ export class AuthService {
     }
   }
 
-  async logout(logoutData: any) {
+  async logout(logoutPayload: any) {
     try {
-      const { refreshToken } = logoutData;
+      const { refreshToken } = logoutPayload;
 
       await this.tokenService.verifyRefreshToken(refreshToken);
 

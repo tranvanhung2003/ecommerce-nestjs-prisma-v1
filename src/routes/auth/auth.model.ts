@@ -26,7 +26,7 @@ export const RegisterSchema = UserSchema.pick({
     }
   });
 
-export type RegisterType = z.infer<typeof RegisterSchema>;
+export type RegisterPayload = z.infer<typeof RegisterSchema>;
 
 // RegisterRes
 export const RegisterResSchema = UserSchema.omit({
@@ -34,7 +34,7 @@ export const RegisterResSchema = UserSchema.omit({
   totpSecret: true,
 });
 
-export type RegisterResType = z.infer<typeof RegisterResSchema>;
+export type RegisterResPayload = z.infer<typeof RegisterResSchema>;
 
 // CreateUser
 export const CreateUserSchema = UserSchema.pick({
@@ -45,7 +45,7 @@ export const CreateUserSchema = UserSchema.pick({
   roleId: true,
 });
 
-export type CreateUserType = z.infer<typeof CreateUserSchema>;
+export type CreateUserPayload = z.infer<typeof CreateUserSchema>;
 
 // VerificationCode
 export const VerificationCodeSchema = z.object({
@@ -57,7 +57,7 @@ export const VerificationCodeSchema = z.object({
   createdAt: z.date(),
 }) satisfies z.ZodType<VerificationCode>;
 
-export type VerificationCodeType = z.infer<typeof VerificationCodeSchema>;
+export type VerificationCodePayload = z.infer<typeof VerificationCodeSchema>;
 
 // CreateVerificationCode
 export const CreateVerificationCodeSchema = VerificationCodeSchema.pick({
@@ -67,7 +67,7 @@ export const CreateVerificationCodeSchema = VerificationCodeSchema.pick({
   expiresAt: true,
 });
 
-export type CreateVerificationCodeType = z.infer<
+export type CreateVerificationCodePayload = z.infer<
   typeof CreateVerificationCodeSchema
 >;
 
@@ -77,4 +77,4 @@ export const SendOtpSchema = VerificationCodeSchema.pick({
   type: true,
 });
 
-export type SendOtpType = z.infer<typeof SendOtpSchema>;
+export type SendOtpPayload = z.infer<typeof SendOtpSchema>;

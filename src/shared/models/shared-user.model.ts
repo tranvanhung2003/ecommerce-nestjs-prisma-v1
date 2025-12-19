@@ -19,4 +19,4 @@ export const UserSchema = z.object({
   deletedAt: z.date().nullable(),
 }) satisfies z.ZodType<User>;
 
-export type UserType = z.infer<typeof UserSchema>;
+export type UserPayload = z.infer<typeof UserSchema>;

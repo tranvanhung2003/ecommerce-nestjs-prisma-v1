@@ -8,7 +8,7 @@ const SendOtpSchema = z.object({
   code: z.string(),
 });
 
-type SendOtpType = z.infer<typeof SendOtpSchema>;
+type SendOtpPayload = z.infer<typeof SendOtpSchema>;
 
 @Injectable()
 export class EmailService {
@@ -20,10 +20,10 @@ export class EmailService {
     this.resend = new Resend(envConfig.RESEND_API_KEY);
   }
 
-  async sendOtp(sendOtpData: SendOtpType) {
-    const $sendOtpData = SendOtpSchema.parse(sendOtpData);
+  async sendOtp(sendOtpPayload: SendOtpPayload) {
+    const $sendOtpPayload = SendOtpSchema.parse(sendOtpPayload);
 
-    const { email, code } = $sendOtpData;
+    const { email, code } = $sendOtpPayload;
 
     return await this.resend.emails.send({
       from: this.fromEmail,
