@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { pretty, render } from '@react-email/render';
 import OtpEmail from 'emails/otp';
 import React from 'react';
 import { Resend } from 'resend';
@@ -14,7 +15,7 @@ type SendOtpPayload = z.infer<typeof SendOtpSchema>;
 
 @Injectable()
 export class EmailService {
-  private readonly subjectOtp = 'Mã OTP';
+  private readonly subject = 'Mã OTP';
   private readonly resend: Resend;
   private readonly fromEmail: string;
 
@@ -28,11 +29,15 @@ export class EmailService {
 
     const { email, code } = $sendOtpPayload;
 
+    const html = await pretty(
+      await render(<OtpEmail title={this.subject} code={code} />),
+    );
+
     return await this.resend.emails.send({
       from: this.fromEmail,
       to: [email],
-      subject: this.subjectOtp,
-      react: <OtpEmail title={this.subjectOtp} code={code} />,
+      subject: this.subject,
+      html,
     });
   }
 }
