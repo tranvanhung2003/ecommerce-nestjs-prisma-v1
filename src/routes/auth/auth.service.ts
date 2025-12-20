@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, UnauthorizedException } from '@nestjs/common';
@@ -17,8 +16,8 @@ import { EmailService } from 'src/shared/services/email.service';
 import { HashingService } from 'src/shared/services/hashing.service';
 import { PrismaService } from 'src/shared/services/prisma.service';
 import { TokenService } from 'src/shared/services/token.service';
-import { EncodedPayload } from 'src/shared/types/jwt.type';
-import { RegisterPayload, SendOtpPayload } from './auth.model';
+import { InputTokenPayload } from 'src/shared/types/jwt.type';
+import { LoginPayload, RegisterPayload, SendOtpPayload } from './auth.model';
 import { AuthRepository } from './auth.repository';
 import { RolesService } from './roles.service';
 
@@ -135,13 +134,18 @@ export class AuthService {
     return verificationCode;
   }
 
-  async login(loginPayload: any) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: loginPayload.email },
+  async login(loginPayload: LoginPayload) {
+    const user = await this.sharedUserRepository.findUnique({
+      email: loginPayload.email,
     });
 
     if (!user) {
-      throw new UnauthorizedException('Account does not exist');
+      throw new CustomUnprocessableEntityException([
+        {
+          message: 'Email không tồn tại',
+          path: 'email',
+        },
+      ]);
     }
 
     const isPasswordValid = await this.hashingService.compare(
@@ -152,7 +156,7 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new CustomUnprocessableEntityException([
         {
-          message: 'Password is incorrect',
+          message: 'Password không đúng',
           path: 'password',
         },
       ]);
@@ -163,20 +167,20 @@ export class AuthService {
     return tokens;
   }
 
-  async generateTokens(encodedPayload: EncodedPayload) {
+  async generateTokens(inputTokenPayload: InputTokenPayload) {
     const [accessToken, refreshToken] = await Promise.all([
-      this.tokenService.signAccessToken(encodedPayload),
-      this.tokenService.signRefreshToken(encodedPayload),
+      this.tokenService.signAccessToken(inputTokenPayload),
+      this.tokenService.signRefreshToken(inputTokenPayload),
     ]);
+
     const decodedRefreshToken =
       await this.tokenService.verifyRefreshToken(refreshToken);
 
-    await this.prisma.refreshToken.create({
-      data: {
-        token: refreshToken,
-        userId: encodedPayload.userId,
-        expiresAt: new Date(decodedRefreshToken.exp * 1000),
-      },
+    await this.authRepository.createRefreshToken({
+      token: refreshToken,
+      userId: inputTokenPayload.userId,
+      deviceId: 4,
+      expiresAt: new Date(decodedRefreshToken.exp * 1000),
     });
 
     return { accessToken, refreshToken };

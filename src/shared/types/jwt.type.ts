@@ -1,10 +1,16 @@
 import { JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
+import z from 'zod';
 
-export interface EncodedPayload {
-  userId: number;
-}
+export const InputTokenSchema = z.object({
+  userId: z.number(),
+  deviceId: z.number(),
+  roleId: z.number(),
+  roleName: z.string(),
+});
 
-export interface DecodedPayload extends EncodedPayload {
+export type InputTokenPayload = z.infer<typeof InputTokenSchema>;
+
+export interface OutputTokenPayload extends InputTokenPayload {
   iat: number;
   exp: number;
 }

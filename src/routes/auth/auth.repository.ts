@@ -3,6 +3,8 @@ import { VerificationCodeKind } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/shared/services/prisma.service';
 import z from 'zod';
 import {
+  CreateRefreshTokenPayload,
+  CreateRefreshTokenSchema,
   CreateUserPayload,
   CreateUserSchema,
   CreateVerificationCodePayload,
@@ -62,6 +64,18 @@ export class AuthRepository {
 
     return this.prisma.verificationCode.findUnique({
       where: $findUniquePayload,
+    });
+  }
+
+  async createRefreshToken(
+    createRefreshTokenPayload: CreateRefreshTokenPayload,
+  ) {
+    const $createRefreshTokenPayload = CreateRefreshTokenSchema.parse(
+      createRefreshTokenPayload,
+    );
+
+    return await this.prisma.refreshToken.create({
+      data: $createRefreshTokenPayload,
     });
   }
 }

@@ -1,4 +1,5 @@
 import {
+  RefreshToken,
   VerificationCode,
   VerificationCodeKind,
 } from 'src/generated/prisma/client';
@@ -78,3 +79,47 @@ export const SendOtpSchema = VerificationCodeSchema.pick({
 });
 
 export type SendOtpPayload = z.infer<typeof SendOtpSchema>;
+
+// TokenPair
+export const TokenPairSchema = z.object({
+  accessToken: z.string(),
+  refreshToken: z.string(),
+});
+
+export type TokenPairPayload = z.infer<typeof TokenPairSchema>;
+
+// Login
+export const LoginSchema = UserSchema.pick({
+  email: true,
+  password: true,
+});
+
+export type LoginPayload = z.infer<typeof LoginSchema>;
+
+// LoginRes
+export const LoginResSchema = TokenPairSchema;
+
+export type LoginResPayload = z.infer<typeof LoginResSchema>;
+
+// RefreshToken
+export const RefreshTokenSchema = z.object({
+  token: z.string(),
+  userId: z.number(),
+  deviceId: z.number(),
+  expiresAt: z.date(),
+  createdAt: z.date(),
+}) satisfies z.ZodType<RefreshToken>;
+
+export type RefreshTokenPayload = z.infer<typeof RefreshTokenSchema>;
+
+// CreateRefreshToken
+export const CreateRefreshTokenSchema = RefreshTokenSchema.pick({
+  token: true,
+  userId: true,
+  deviceId: true,
+  expiresAt: true,
+});
+
+export type CreateRefreshTokenPayload = z.infer<
+  typeof CreateRefreshTokenSchema
+>;
