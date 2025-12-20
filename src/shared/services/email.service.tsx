@@ -15,14 +15,14 @@ type SendOtpPayload = z.infer<typeof SendOtpSchema>;
 
 @Injectable()
 export class EmailService {
-  private readonly subject = 'Mã OTP';
+  private readonly SUBJECT = 'Mã OTP';
 
   private readonly resend: Resend;
-  private readonly fromEmail: string;
+  private readonly FROM_EMAIL: string;
 
   constructor() {
     this.resend = new Resend(envConfig.RESEND_API_KEY);
-    this.fromEmail = `Ecommerce <noreply@${envConfig.RESEND_DOMAIN_NAME}>`;
+    this.FROM_EMAIL = `Ecommerce <noreply@${envConfig.RESEND_DOMAIN_NAME}>`;
   }
 
   async sendOtp(sendOtpPayload: SendOtpPayload) {
@@ -31,13 +31,13 @@ export class EmailService {
     const { email, code } = $sendOtpPayload;
 
     const html = await pretty(
-      await render(<OtpEmail title={this.subject} code={code} />),
+      await render(<OtpEmail title={this.SUBJECT} code={code} />),
     );
 
     return await this.resend.emails.send({
-      from: this.fromEmail,
+      from: this.FROM_EMAIL,
       to: [email],
-      subject: this.subject,
+      subject: this.SUBJECT,
       html,
     });
   }
