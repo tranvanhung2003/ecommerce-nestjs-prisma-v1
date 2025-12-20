@@ -16,7 +16,7 @@ import { EmailService } from 'src/shared/services/email.service';
 import { HashingService } from 'src/shared/services/hashing.service';
 import { PrismaService } from 'src/shared/services/prisma.service';
 import { TokenService } from 'src/shared/services/token.service';
-import { InputTokenPayload } from 'src/shared/types/jwt.type';
+import { InputAccessTokenPayload } from 'src/shared/types/jwt.type';
 import { LoginPayload, RegisterPayload, SendOtpPayload } from './auth.model';
 import { AuthRepository } from './auth.repository';
 import { RolesService } from './roles.service';
@@ -135,7 +135,7 @@ export class AuthService {
   }
 
   async login(loginPayload: LoginPayload) {
-    const user = await this.sharedUserRepository.findUnique({
+    const user = await this.authRepository.findUniqueUserIncludeRole({
       email: loginPayload.email,
     });
 
@@ -162,25 +162,40 @@ export class AuthService {
       ]);
     }
 
-    const tokens = await this.generateTokens({ userId: user.id });
+    const device = await this.authRepository.createDevice({
+      userId: user.id,
+      userAgent: loginPayload.userAgent,
+      ip: loginPayload.ip,
+    });
+
+    const tokens = await this.generateTokens({
+      userId: user.id,
+      deviceId: device.id,
+      roleId: user.roleId,
+      roleName: user.role.name,
+    });
 
     return tokens;
   }
 
-  async generateTokens(inputTokenPayload: InputTokenPayload) {
+  async generateTokens(inputAccessTokenPayload: InputAccessTokenPayload) {
+    const inputRefreshTokenPayload = {
+      userId: inputAccessTokenPayload.userId,
+    };
+
     const [accessToken, refreshToken] = await Promise.all([
-      this.tokenService.signAccessToken(inputTokenPayload),
-      this.tokenService.signRefreshToken(inputTokenPayload),
+      this.tokenService.signAccessToken(inputAccessTokenPayload),
+      this.tokenService.signRefreshToken(inputRefreshTokenPayload),
     ]);
 
-    const decodedRefreshToken =
+    const verifiedRefreshToken =
       await this.tokenService.verifyRefreshToken(refreshToken);
 
     await this.authRepository.createRefreshToken({
       token: refreshToken,
-      userId: inputTokenPayload.userId,
-      deviceId: 4,
-      expiresAt: new Date(decodedRefreshToken.exp * 1000),
+      userId: inputAccessTokenPayload.userId,
+      deviceId: inputAccessTokenPayload.deviceId,
+      expiresAt: new Date(verifiedRefreshToken.exp * 1000),
     });
 
     return { accessToken, refreshToken };

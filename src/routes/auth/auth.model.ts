@@ -1,5 +1,7 @@
 import {
+  Device,
   RefreshToken,
+  Role,
   VerificationCode,
   VerificationCodeKind,
 } from 'src/generated/prisma/client';
@@ -29,13 +31,13 @@ export const RegisterSchema = UserSchema.pick({
 
 export type RegisterPayload = z.infer<typeof RegisterSchema>;
 
-// RegisterRes
-export const RegisterResSchema = UserSchema.omit({
+// RegisterResponse
+export const RegisterResponseSchema = UserSchema.omit({
   password: true,
   totpSecret: true,
 });
 
-export type RegisterResPayload = z.infer<typeof RegisterResSchema>;
+export type RegisterResponsePayload = z.infer<typeof RegisterResponseSchema>;
 
 // CreateUser
 export const CreateUserSchema = UserSchema.pick({
@@ -88,18 +90,10 @@ export const TokenPairSchema = z.object({
 
 export type TokenPairPayload = z.infer<typeof TokenPairSchema>;
 
-// Login
-export const LoginSchema = UserSchema.pick({
-  email: true,
-  password: true,
-});
+// LoginResponse
+export const LoginResponseSchema = TokenPairSchema;
 
-export type LoginPayload = z.infer<typeof LoginSchema>;
-
-// LoginRes
-export const LoginResSchema = TokenPairSchema;
-
-export type LoginResPayload = z.infer<typeof LoginResSchema>;
+export type LoginResponsePayload = z.infer<typeof LoginResponseSchema>;
 
 // RefreshToken
 export const RefreshTokenSchema = z.object({
@@ -123,3 +117,65 @@ export const CreateRefreshTokenSchema = RefreshTokenSchema.pick({
 export type CreateRefreshTokenPayload = z.infer<
   typeof CreateRefreshTokenSchema
 >;
+
+// Device
+export const DeviceSchema = z.object({
+  id: z.number(),
+  userId: z.number(),
+  userAgent: z.string(),
+  ip: z.string(),
+  lastActive: z.date(),
+  createdAt: z.date(),
+  isActive: z.boolean(),
+}) satisfies z.ZodType<Device>;
+
+export type DevicePayload = z.infer<typeof DeviceSchema>;
+
+// CreateDevice
+export const CreateDeviceSchema = DeviceSchema.pick({
+  userId: true,
+  userAgent: true,
+  ip: true,
+}).safeExtend(
+  DeviceSchema.pick({
+    lastActive: true,
+    isActive: true,
+  }).partial().shape,
+);
+
+export type CreateDevicePayload = z.infer<typeof CreateDeviceSchema>;
+
+// Login
+export const LoginSchema = UserSchema.pick({
+  email: true,
+  password: true,
+}).safeExtend(
+  DeviceSchema.pick({
+    userAgent: true,
+    ip: true,
+  }).shape,
+);
+
+export type LoginPayload = z.infer<typeof LoginSchema>;
+
+// Role
+export const RoleSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  description: z.string(),
+  isActive: z.boolean(),
+  createdById: z.number().nullable(),
+  updatedById: z.number().nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  deletedAt: z.date().nullable(),
+}) satisfies z.ZodType<Role>;
+
+export type RolePayload = z.infer<typeof RoleSchema>;
+
+// UserIncludeRole
+export const UserIncludeRoleSchema = UserSchema.safeExtend({
+  role: RoleSchema,
+});
+
+export type UserIncludeRolePayload = z.infer<typeof UserIncludeRoleSchema>;

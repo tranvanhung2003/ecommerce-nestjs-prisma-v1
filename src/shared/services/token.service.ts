@@ -61,7 +61,7 @@ export class TokenService {
   private async verifyToken(
     tokenKind_stringPayload: TokenKind_StringPayload,
     verifyOptions: VerifyOptions,
-  ) {
+  ): Promise<OutputAccessTokenPayload | OutputRefreshTokenPayload> {
     const { payload } = tokenKind_stringPayload;
 
     switch (tokenKind_stringPayload.kind) {
@@ -103,21 +103,21 @@ export class TokenService {
     );
   }
 
-  async verifyAccessToken(token: string) {
-    return await this.verifyToken(
+  async verifyAccessToken(token: string): Promise<OutputAccessTokenPayload> {
+    return (await this.verifyToken(
       { kind: TokenKind.ACCESS_TOKEN, payload: token },
       {
         secret: envConfig.ACCESS_TOKEN_SECRET,
       },
-    );
+    )) as OutputAccessTokenPayload;
   }
 
-  async verifyRefreshToken(token: string) {
-    return await this.verifyToken(
+  async verifyRefreshToken(token: string): Promise<OutputRefreshTokenPayload> {
+    return (await this.verifyToken(
       { kind: TokenKind.REFRESH_TOKEN, payload: token },
       {
         secret: envConfig.REFRESH_TOKEN_SECRET,
       },
-    );
+    )) as OutputRefreshTokenPayload;
   }
 }

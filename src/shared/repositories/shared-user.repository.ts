@@ -3,24 +3,26 @@ import z from 'zod';
 import { UserPayload } from '../models/shared-user.model';
 import { PrismaService } from '../services/prisma.service';
 
-const FindUniqueSchema = z.union([
+export const FindUniqueUserSchema = z.union([
   z.object({ id: z.number() }),
   z.object({ email: z.email() }),
 ]);
 
-type FindUniquePayload = z.infer<typeof FindUniqueSchema>;
+export type FindUniqueUserPayload = z.infer<typeof FindUniqueUserSchema>;
 
 @Injectable()
 export class SharedUserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUnique(
-    findUniquePayload: FindUniquePayload,
+    findUniqueUserPayload: FindUniqueUserPayload,
   ): Promise<UserPayload | null> {
-    const $findUniquePayload = FindUniqueSchema.parse(findUniquePayload);
+    const $findUniqueUserPayload = FindUniqueUserSchema.parse(
+      findUniqueUserPayload,
+    );
 
     return this.prisma.user.findUnique({
-      where: $findUniquePayload,
+      where: $findUniqueUserPayload,
     });
   }
 }

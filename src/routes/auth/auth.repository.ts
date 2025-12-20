@@ -1,19 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { VerificationCodeKind } from 'src/generated/prisma/enums';
+import {
+  FindUniqueUserPayload,
+  FindUniqueUserSchema,
+} from 'src/shared/repositories/shared-user.repository';
 import { PrismaService } from 'src/shared/services/prisma.service';
 import z from 'zod';
 import {
+  CreateDevicePayload,
+  CreateDeviceSchema,
   CreateRefreshTokenPayload,
   CreateRefreshTokenSchema,
   CreateUserPayload,
   CreateUserSchema,
   CreateVerificationCodePayload,
   CreateVerificationCodeSchema,
-  RegisterResPayload,
+  DevicePayload,
+  RefreshTokenPayload,
+  RegisterResponsePayload,
+  UserIncludeRolePayload,
   VerificationCodePayload,
 } from './auth.model';
 
-const FindUniqueSchema = z.union([
+const FindUniqueVerificationCodeSchema = z.union([
   z.object({
     email: z.email(),
     code: z.string(),
@@ -23,7 +32,9 @@ const FindUniqueSchema = z.union([
   z.object({ email: z.email() }),
 ]);
 
-type FindUniquePayload = z.infer<typeof FindUniqueSchema>;
+type FindUniqueVerificationCodePayload = z.infer<
+  typeof FindUniqueVerificationCodeSchema
+>;
 
 @Injectable()
 export class AuthRepository {
@@ -31,7 +42,7 @@ export class AuthRepository {
 
   async createUser(
     createUserPayload: CreateUserPayload,
-  ): Promise<RegisterResPayload> {
+  ): Promise<RegisterResponsePayload> {
     const $createUserPayload = CreateUserSchema.parse(createUserPayload);
 
     return this.prisma.user.create({
@@ -58,24 +69,50 @@ export class AuthRepository {
   }
 
   async findUniqueVerificationCode(
-    findUniquePayload: FindUniquePayload,
+    findUniqueVerificationCodePayload: FindUniqueVerificationCodePayload,
   ): Promise<VerificationCodePayload | null> {
-    const $findUniquePayload = FindUniqueSchema.parse(findUniquePayload);
+    const $findUniqueVerificationCodePayload =
+      FindUniqueVerificationCodeSchema.parse(findUniqueVerificationCodePayload);
 
     return this.prisma.verificationCode.findUnique({
-      where: $findUniquePayload,
+      where: $findUniqueVerificationCodePayload,
     });
   }
 
   async createRefreshToken(
     createRefreshTokenPayload: CreateRefreshTokenPayload,
-  ) {
+  ): Promise<RefreshTokenPayload> {
     const $createRefreshTokenPayload = CreateRefreshTokenSchema.parse(
       createRefreshTokenPayload,
     );
 
     return await this.prisma.refreshToken.create({
       data: $createRefreshTokenPayload,
+    });
+  }
+
+  async createDevice(
+    createDevicePayload: CreateDevicePayload,
+  ): Promise<DevicePayload> {
+    const $createDevicePayload = CreateDeviceSchema.parse(createDevicePayload);
+
+    return this.prisma.device.create({
+      data: $createDevicePayload,
+    });
+  }
+
+  async findUniqueUserIncludeRole(
+    findUniqueUserPayload: FindUniqueUserPayload,
+  ): Promise<UserIncludeRolePayload | null> {
+    const $findUniqueUserPayload = FindUniqueUserSchema.parse(
+      findUniqueUserPayload,
+    );
+
+    return this.prisma.user.findUnique({
+      where: $findUniqueUserPayload,
+      include: {
+        role: true,
+      },
     });
   }
 }
