@@ -26,7 +26,7 @@ import { RolesService } from './roles.service';
 export class AuthService {
   constructor(
     private readonly rolesService: RolesService,
-    // todo: sẽ xóa prisma service sau khi hoàn thành refactor repository
+    // TODO: xóa prisma trong tương lai
     private readonly prisma: PrismaService,
     private readonly authRepository: AuthRepository,
     private readonly hashingService: HashingService,
