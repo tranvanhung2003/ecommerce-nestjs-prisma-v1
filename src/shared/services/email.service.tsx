@@ -16,6 +16,7 @@ type SendOtpPayload = z.infer<typeof SendOtpSchema>;
 @Injectable()
 export class EmailService {
   private readonly subject = 'Mã OTP';
+
   private readonly resend: Resend;
   private readonly fromEmail: string;
 
