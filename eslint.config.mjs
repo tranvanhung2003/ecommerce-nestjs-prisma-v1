@@ -45,4 +45,10 @@ export default tseslint.config(
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },
+  {
+    files: ['**/*.repository.ts'],
+    rules: {
+      '@typescript-eslint/explicit-function-return-type': 'error',
+    },
+  },
 );
