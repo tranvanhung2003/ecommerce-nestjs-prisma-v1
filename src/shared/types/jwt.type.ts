@@ -12,9 +12,9 @@ type WithIatAndExp<T> = T & {
   exp: number;
 };
 
-interface Kind_Payload<Kind, Payload> {
-  kind: Kind;
-  payload: Payload;
+interface Kind_Payload<K, P> {
+  kind: K;
+  payload: P;
 }
 
 //
@@ -39,6 +39,16 @@ export const InputRefreshTokenSchema = z.object({
 export type InputRefreshTokenPayload = z.infer<typeof InputRefreshTokenSchema>;
 
 export type OutputRefreshTokenPayload = WithIatAndExp<InputRefreshTokenPayload>;
+
+//
+
+export type InputTokenPayload =
+  | InputAccessTokenPayload
+  | InputRefreshTokenPayload;
+
+export type OutputTokenPayload =
+  | OutputAccessTokenPayload
+  | OutputRefreshTokenPayload;
 
 //
 

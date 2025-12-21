@@ -9,6 +9,7 @@ import {
   InputAccessTokenSchema,
   InputRefreshTokenPayload,
   InputRefreshTokenSchema,
+  InputTokenPayload,
   Kind_InputTokenPayload,
   OutputAccessTokenPayload,
   OutputRefreshTokenPayload,
@@ -24,6 +25,10 @@ export class TokenService {
 
   constructor(private readonly jwtService: JwtService) {}
 
+  private addUuidToPayload<T extends InputTokenPayload>(payload: T) {
+    return { ...payload, uuid: uuidv4() };
+  }
+
   private async signToken(
     kind_inputTokenPayload: Kind_InputTokenPayload,
     signOptions: SignOptions,
@@ -33,10 +38,9 @@ export class TokenService {
     switch (kind_inputTokenPayload.kind) {
       case TokenKind.ACCESS_TOKEN: {
         const $payload = InputAccessTokenSchema.parse(payload);
-        const payload_uuid = { ...$payload, uuid: uuidv4() };
 
         return await this.jwtService.signAsync<InputAccessTokenPayload>(
-          payload_uuid,
+          this.addUuidToPayload($payload),
           {
             ...signOptions,
             algorithm: this.ALGORITHM,
@@ -45,10 +49,9 @@ export class TokenService {
       }
       case TokenKind.REFRESH_TOKEN: {
         const $payload = InputRefreshTokenSchema.parse(payload);
-        const payload_uuid = { ...$payload, uuid: uuidv4() };
 
         return await this.jwtService.signAsync<InputRefreshTokenPayload>(
-          payload_uuid,
+          this.addUuidToPayload($payload),
           {
             ...signOptions,
             algorithm: this.ALGORITHM,
