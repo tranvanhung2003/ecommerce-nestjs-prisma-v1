@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import envConfig from '../config';
 import { assertNever } from '../helpers/helpers';
 import {
+  AccessTokenKind_StringPayload,
   InputAccessTokenPayload,
   InputAccessTokenSchema,
   InputRefreshTokenPayload,
@@ -13,6 +14,7 @@ import {
   Kind_InputTokenPayload,
   OutputAccessTokenPayload,
   OutputRefreshTokenPayload,
+  RefreshTokenKind_StringPayload,
   SignOptions,
   TokenKind,
   TokenKind_StringPayload,
@@ -65,9 +67,19 @@ export class TokenService {
   }
 
   private async verifyToken(
+    accessTokenKind_stringPayload: AccessTokenKind_StringPayload,
+    verifyOptions: VerifyOptions,
+  ): Promise<OutputAccessTokenPayload>;
+
+  private async verifyToken(
+    refreshTokenKind_stringPayload: RefreshTokenKind_StringPayload,
+    verifyOptions: VerifyOptions,
+  ): Promise<OutputRefreshTokenPayload>;
+
+  private async verifyToken(
     tokenKind_stringPayload: TokenKind_StringPayload,
     verifyOptions: VerifyOptions,
-  ): Promise<OutputAccessTokenPayload | OutputRefreshTokenPayload> {
+  ) {
     const { payload } = tokenKind_stringPayload;
 
     switch (tokenKind_stringPayload.kind) {
@@ -109,21 +121,21 @@ export class TokenService {
     );
   }
 
-  async verifyAccessToken(token: string): Promise<OutputAccessTokenPayload> {
-    return (await this.verifyToken(
+  async verifyAccessToken(token: string) {
+    return await this.verifyToken(
       { kind: TokenKind.ACCESS_TOKEN, payload: token },
       {
         secret: envConfig.ACCESS_TOKEN_SECRET,
       },
-    )) as OutputAccessTokenPayload;
+    );
   }
 
-  async verifyRefreshToken(token: string): Promise<OutputRefreshTokenPayload> {
-    return (await this.verifyToken(
+  async verifyRefreshToken(token: string) {
+    return await this.verifyToken(
       { kind: TokenKind.REFRESH_TOKEN, payload: token },
       {
         secret: envConfig.REFRESH_TOKEN_SECRET,
       },
-    )) as OutputRefreshTokenPayload;
+    );
   }
 }
