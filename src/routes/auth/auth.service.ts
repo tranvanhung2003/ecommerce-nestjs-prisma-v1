@@ -128,9 +128,11 @@ export class AuthService {
     return verificationCode;
   }
 
-  async login(loginPayload: LoginPayload) {
+  async login(
+    compositePayload: LoginPayload & { userAgent: string; ip: string },
+  ) {
     const user = await this.authRepository.findUniqueUserIncludeRole({
-      email: loginPayload.email,
+      email: compositePayload.email,
     });
 
     if (!user) {
@@ -143,7 +145,7 @@ export class AuthService {
     }
 
     const isPasswordValid = await this.hashingService.compare(
-      loginPayload.password,
+      compositePayload.password,
       user.password,
     );
 
@@ -158,8 +160,8 @@ export class AuthService {
 
     const device = await this.authRepository.createDevice({
       userId: user.id,
-      userAgent: 'testUserAgent',
-      ip: 'testIp',
+      userAgent: compositePayload.userAgent,
+      ip: compositePayload.ip,
     });
 
     const tokens = await this.generateTokens({

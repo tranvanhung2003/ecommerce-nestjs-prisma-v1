@@ -21,10 +21,10 @@ export class AccessTokenGuard implements CanActivate {
         throw new UnauthorizedException('Access token is missing');
       }
 
-      const decodedAccessToken =
+      const verifiedAccessToken =
         await this.tokenService.verifyAccessToken(accessToken);
 
-      request[REQUEST_USER_KEY] = decodedAccessToken;
+      request[REQUEST_USER_KEY] = verifiedAccessToken;
 
       return true;
     } catch (error) {
