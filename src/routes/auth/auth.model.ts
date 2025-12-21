@@ -90,6 +90,14 @@ export const TokenPairSchema = z.object({
 
 export type TokenPairPayload = z.infer<typeof TokenPairSchema>;
 
+// Login
+export const LoginSchema = UserSchema.pick({
+  email: true,
+  password: true,
+});
+
+export type LoginPayload = z.infer<typeof LoginSchema>;
+
 // LoginResponse
 export const LoginResponseSchema = TokenPairSchema;
 
@@ -144,19 +152,6 @@ export const CreateDeviceSchema = DeviceSchema.pick({
 );
 
 export type CreateDevicePayload = z.infer<typeof CreateDeviceSchema>;
-
-// Login
-export const LoginSchema = UserSchema.pick({
-  email: true,
-  password: true,
-}).safeExtend(
-  DeviceSchema.pick({
-    userAgent: true,
-    ip: true,
-  }).shape,
-);
-
-export type LoginPayload = z.infer<typeof LoginSchema>;
 
 // Role
 export const RoleSchema = z.object({

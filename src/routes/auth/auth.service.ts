@@ -158,8 +158,8 @@ export class AuthService {
 
     const device = await this.authRepository.createDevice({
       userId: user.id,
-      userAgent: loginPayload.userAgent,
-      ip: loginPayload.ip,
+      userAgent: 'testUserAgent',
+      ip: 'testIp',
     });
 
     const tokens = await this.generateTokens({

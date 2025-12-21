@@ -42,3 +42,7 @@ export function isPrismaClientNotFoundError(
 export function generateOtp() {
   return randomInt(100000, 1000000).toString();
 }
+
+export function assertNever(_x: never): never {
+  throw new Error('This code path should never be reached.');
+}
