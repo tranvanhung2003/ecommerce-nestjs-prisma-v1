@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import ms from 'ms';
+import { v4 as uuidv4 } from 'uuid';
 import envConfig from '../config';
 import { assertNever } from '../helpers/helpers';
 import {
@@ -32,9 +33,10 @@ export class TokenService {
     switch (kind_inputTokenPayload.kind) {
       case TokenKind.ACCESS_TOKEN: {
         const $payload = InputAccessTokenSchema.parse(payload);
+        const payload_uuid = { ...$payload, uuid: uuidv4() };
 
         return await this.jwtService.signAsync<InputAccessTokenPayload>(
-          $payload,
+          payload_uuid,
           {
             ...signOptions,
             algorithm: this.ALGORITHM,
@@ -43,9 +45,10 @@ export class TokenService {
       }
       case TokenKind.REFRESH_TOKEN: {
         const $payload = InputRefreshTokenSchema.parse(payload);
+        const payload_uuid = { ...$payload, uuid: uuidv4() };
 
         return await this.jwtService.signAsync<InputRefreshTokenPayload>(
-          $payload,
+          payload_uuid,
           {
             ...signOptions,
             algorithm: this.ALGORITHM,

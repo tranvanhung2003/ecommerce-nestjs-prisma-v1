@@ -30,7 +30,6 @@ export class AuthController {
     @UserAgent() userAgent: string,
     @Ip() ip: string,
   ) {
-    console.log(ip);
     return this.authService.login({ ...loginDto, userAgent, ip });
   }
 
