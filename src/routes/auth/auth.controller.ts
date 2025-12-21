@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { ZodSerializerDto } from 'nestjs-zod';
 import {
   LoginDto,
@@ -28,14 +28,14 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  @Post('refresh-token')
-  @HttpCode(HttpStatus.OK)
-  refreshToken(@Body() refreshTokenDto: any) {
-    return this.authService.refreshToken(refreshTokenDto);
-  }
+  // @Post('refresh-token')
+  // @HttpCode(HttpStatus.OK)
+  // refreshToken(@Body() refreshTokenDto: any) {
+  //   return this.authService.refreshToken(refreshTokenDto);
+  // }
 
-  @Post('logout')
-  async logout(@Body() logoutDto: any) {
-    return this.authService.logout(logoutDto);
-  }
+  // @Post('logout')
+  // async logout(@Body() logoutDto: any) {
+  //   return this.authService.logout(logoutDto);
+  // }
 }

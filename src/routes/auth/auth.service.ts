@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { addMilliseconds } from 'date-fns';
 import ms from 'ms';
 import { VerificationCodeKind } from 'src/generated/prisma/enums';
@@ -8,13 +6,11 @@ import envConfig from 'src/shared/config';
 import {
   CustomUnprocessableEntityException,
   generateOtp,
-  isPrismaClientNotFoundError,
   isPrismaClientUniqueConstraintError,
 } from 'src/shared/helpers/helpers';
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
 import { EmailService } from 'src/shared/services/email.service';
 import { HashingService } from 'src/shared/services/hashing.service';
-import { PrismaService } from 'src/shared/services/prisma.service';
 import { TokenService } from 'src/shared/services/token.service';
 import { InputAccessTokenPayload } from 'src/shared/types/jwt.type';
 import { LoginPayload, RegisterPayload, SendOtpPayload } from './auth.model';
@@ -25,8 +21,6 @@ import { RolesService } from './roles.service';
 export class AuthService {
   constructor(
     private readonly rolesService: RolesService,
-    // TODO: xóa prisma trong tương lai
-    private readonly prisma: PrismaService,
     private readonly authRepository: AuthRepository,
     private readonly hashingService: HashingService,
     private readonly tokenService: TokenService,
@@ -201,52 +195,52 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async refreshToken(refreshTokenPayload: any) {
-    try {
-      const { refreshToken } = refreshTokenPayload;
+  // async refreshToken(refreshTokenPayload: any) {
+  //   try {
+  //     const { refreshToken } = refreshTokenPayload;
 
-      // Kiểm tra refreshToken có hợp lệ không
-      const { userId } =
-        await this.tokenService.verifyRefreshToken(refreshToken);
+  //     // Kiểm tra refreshToken có hợp lệ không
+  //     const { userId } =
+  //       await this.tokenService.verifyRefreshToken(refreshToken);
 
-      // Kiểm tra refreshToken có tồn tại trong database không
-      await this.prisma.refreshToken.findUniqueOrThrow({
-        where: { token: refreshToken },
-      });
+  //     // Kiểm tra refreshToken có tồn tại trong database không
+  //     await this.prisma.refreshToken.findUniqueOrThrow({
+  //       where: { token: refreshToken },
+  //     });
 
-      // Xóa refreshToken cũ
-      await this.prisma.refreshToken.delete({
-        where: { token: refreshToken },
-      });
+  //     // Xóa refreshToken cũ
+  //     await this.prisma.refreshToken.delete({
+  //       where: { token: refreshToken },
+  //     });
 
-      // Tạo mới cặp accessToken và refreshToken
-      return await this.generateTokens({ userId });
-    } catch (error) {
-      if (isPrismaClientNotFoundError(error)) {
-        throw new UnauthorizedException('Refresh token has been revoked');
-      }
+  //     // Tạo mới cặp accessToken và refreshToken
+  //     return await this.generateTokens({ userId });
+  //   } catch (error) {
+  //     if (isPrismaClientNotFoundError(error)) {
+  //       throw new UnauthorizedException('Refresh token has been revoked');
+  //     }
 
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-  }
+  //     throw new UnauthorizedException('Invalid refresh token');
+  //   }
+  // }
 
-  async logout(logoutPayload: any) {
-    try {
-      const { refreshToken } = logoutPayload;
+  // async logout(logoutPayload: any) {
+  //   try {
+  //     const { refreshToken } = logoutPayload;
 
-      await this.tokenService.verifyRefreshToken(refreshToken);
+  //     await this.tokenService.verifyRefreshToken(refreshToken);
 
-      await this.prisma.refreshToken.delete({
-        where: { token: refreshToken },
-      });
+  //     await this.prisma.refreshToken.delete({
+  //       where: { token: refreshToken },
+  //     });
 
-      return { message: 'Logout successful' };
-    } catch (error) {
-      if (isPrismaClientNotFoundError(error)) {
-        throw new UnauthorizedException('Refresh token has been revoked');
-      }
+  //     return { message: 'Logout successful' };
+  //   } catch (error) {
+  //     if (isPrismaClientNotFoundError(error)) {
+  //       throw new UnauthorizedException('Refresh token has been revoked');
+  //     }
 
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-  }
+  //     throw new UnauthorizedException('Invalid refresh token');
+  //   }
+  // }
 }
