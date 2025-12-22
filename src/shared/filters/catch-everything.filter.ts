@@ -29,7 +29,7 @@ export class CatchEverythingFilter implements ExceptionFilter {
     const message =
       exception instanceof HttpException
         ? exception.message
-        : 'Internal server error';
+        : 'Internal Server Error';
 
     const responseBody = {
       statusCode: httpStatus,

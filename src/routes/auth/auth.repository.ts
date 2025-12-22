@@ -16,8 +16,11 @@ import {
   CreateVerificationCodePayload,
   CreateVerificationCodeSchema,
   DevicePayload,
+  RefreshTokenIncludeUserIncludeRolePayload,
   RefreshTokenPayload,
   RegisterResponsePayload,
+  UpdateDevicePayload,
+  UpdateDeviceSchema,
   UserIncludeRolePayload,
   VerificationCodePayload,
 } from './auth.model';
@@ -35,6 +38,22 @@ const FindUniqueVerificationCodeSchema = z.union([
 type FindUniqueVerificationCodePayload = z.infer<
   typeof FindUniqueVerificationCodeSchema
 >;
+
+// ----------------------------------------------------------------------------------------------------
+
+const FindUniqueRefreshTokenSchema = z.object({
+  token: z.string(),
+});
+
+type FindUniqueRefreshTokenPayload = z.infer<
+  typeof FindUniqueRefreshTokenSchema
+>;
+
+// ----------------------------------------------------------------------------------------------------
+
+const DeleteRefreshTokenSchema = FindUniqueRefreshTokenSchema;
+
+type DeleteRefreshTokenPayload = z.infer<typeof DeleteRefreshTokenSchema>;
 
 @Injectable()
 export class AuthRepository {
@@ -113,6 +132,49 @@ export class AuthRepository {
       include: {
         role: true,
       },
+    });
+  }
+
+  async findUniqueRefreshTokenIncludeUserIncludeRole(
+    findUniqueRefreshTokenPayload: FindUniqueRefreshTokenPayload,
+  ): Promise<RefreshTokenIncludeUserIncludeRolePayload | null> {
+    const $findUniqueRefreshTokenPayload = FindUniqueRefreshTokenSchema.parse(
+      findUniqueRefreshTokenPayload,
+    );
+
+    return await this.prisma.refreshToken.findUnique({
+      where: $findUniqueRefreshTokenPayload,
+      include: {
+        user: {
+          include: {
+            role: true,
+          },
+        },
+      },
+    });
+  }
+
+  async updateDevice(
+    deviceId: number,
+    updateDevicePayload: UpdateDevicePayload,
+  ): Promise<DevicePayload> {
+    const $updateDevicePayload = UpdateDeviceSchema.parse(updateDevicePayload);
+
+    return this.prisma.device.update({
+      where: { id: deviceId },
+      data: $updateDevicePayload,
+    });
+  }
+
+  async deleteRefreshToken(
+    deleteRefreshTokenPayload: DeleteRefreshTokenPayload,
+  ): Promise<RefreshTokenPayload> {
+    const $deleteRefreshTokenPayload = DeleteRefreshTokenSchema.parse(
+      deleteRefreshTokenPayload,
+    );
+
+    return this.prisma.refreshToken.delete({
+      where: $deleteRefreshTokenPayload,
     });
   }
 }

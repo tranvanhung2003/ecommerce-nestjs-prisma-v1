@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  HttpException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -28,7 +29,7 @@ export class AccessTokenGuard implements CanActivate {
 
       return true;
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 

@@ -167,6 +167,11 @@ export const CreateDeviceSchema = DeviceSchema.pick({
 
 export type CreateDevicePayload = z.infer<typeof CreateDeviceSchema>;
 
+// UpdateDevice
+export const UpdateDeviceSchema = CreateDeviceSchema.partial();
+
+export type UpdateDevicePayload = z.infer<typeof UpdateDeviceSchema>;
+
 // Role
 export const RoleSchema = z.object({
   id: z.number(),
@@ -188,3 +193,13 @@ export const UserIncludeRoleSchema = UserSchema.safeExtend({
 });
 
 export type UserIncludeRolePayload = z.infer<typeof UserIncludeRoleSchema>;
+
+// RefreshTokenIncludeUserIncludeRole
+export const RefreshTokenIncludeUserIncludeRoleSchema =
+  RefreshTokenSchema.safeExtend({
+    user: UserIncludeRoleSchema,
+  });
+
+export type RefreshTokenIncludeUserIncludeRolePayload = z.infer<
+  typeof RefreshTokenIncludeUserIncludeRoleSchema
+>;

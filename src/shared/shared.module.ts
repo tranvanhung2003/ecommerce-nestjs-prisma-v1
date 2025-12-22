@@ -42,15 +42,7 @@ const sharedAppPipes: Type[] = [CustomZodValidationPipe];
 // Global filters
 const sharedAppFilters: Type[] = [CatchEverythingFilter, HttpExceptionFilter];
 
-//
-
-//
-
-//
-
-//
-
-//
+// ----------------------------------------------------------------------------------------------------
 
 // Register global guards
 const appGuards: ClassProvider[] = sharedAppGuards.map((guard) => ({

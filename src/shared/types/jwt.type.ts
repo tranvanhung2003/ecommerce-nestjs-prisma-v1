@@ -5,7 +5,7 @@ export type SignOptions = Pick<JwtSignOptions, 'secret' | 'expiresIn'>;
 
 export type VerifyOptions = Pick<JwtVerifyOptions, 'secret'>;
 
-//
+// ----------------------------------------------------------------------------------------------------
 
 type WithIatAndExp<T> = T & {
   iat: number;
@@ -17,7 +17,7 @@ interface Kind_Payload<K, P> {
   payload: P;
 }
 
-//
+// ----------------------------------------------------------------------------------------------------
 
 export const InputAccessTokenSchema = z.object({
   userId: z.number(),
@@ -30,7 +30,7 @@ export type InputAccessTokenPayload = z.infer<typeof InputAccessTokenSchema>;
 
 export type OutputAccessTokenPayload = WithIatAndExp<InputAccessTokenPayload>;
 
-//
+// ----------------------------------------------------------------------------------------------------
 
 export const InputRefreshTokenSchema = z.object({
   userId: z.number(),
@@ -40,7 +40,7 @@ export type InputRefreshTokenPayload = z.infer<typeof InputRefreshTokenSchema>;
 
 export type OutputRefreshTokenPayload = WithIatAndExp<InputRefreshTokenPayload>;
 
-//
+// ----------------------------------------------------------------------------------------------------
 
 export type InputTokenPayload =
   | InputAccessTokenPayload
@@ -50,7 +50,7 @@ export type OutputTokenPayload =
   | OutputAccessTokenPayload
   | OutputRefreshTokenPayload;
 
-//
+// ----------------------------------------------------------------------------------------------------
 
 export const TokenKind = {
   ACCESS_TOKEN: 'accessToken',
@@ -61,7 +61,7 @@ type TokenKindType = typeof TokenKind;
 
 type TokenKind = (typeof TokenKind)[keyof typeof TokenKind];
 
-//
+// ----------------------------------------------------------------------------------------------------
 
 export type Kind_InputAccessTokenPayload = Kind_Payload<
   TokenKindType['ACCESS_TOKEN'],
@@ -77,7 +77,7 @@ export type Kind_InputTokenPayload =
   | Kind_InputAccessTokenPayload
   | Kind_InputRefreshTokenPayload;
 
-//
+// ----------------------------------------------------------------------------------------------------
 
 export type AccessTokenKind_StringPayload = Kind_Payload<
   TokenKindType['ACCESS_TOKEN'],

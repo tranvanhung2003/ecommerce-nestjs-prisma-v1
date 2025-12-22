@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { addMilliseconds } from 'date-fns';
 import ms from 'ms';
 import { VerificationCodeKind } from 'src/generated/prisma/enums';
@@ -13,7 +17,12 @@ import { EmailService } from 'src/shared/services/email.service';
 import { HashingService } from 'src/shared/services/hashing.service';
 import { TokenService } from 'src/shared/services/token.service';
 import { InputAccessTokenPayload } from 'src/shared/types/jwt.type';
-import { LoginPayload, RegisterPayload, SendOtpPayload } from './auth.model';
+import {
+  DoRefreshTokenPayload,
+  LoginPayload,
+  RegisterPayload,
+  SendOtpPayload,
+} from './auth.model';
 import { AuthRepository } from './auth.repository';
 import { RolesService } from './roles.service';
 
@@ -71,6 +80,10 @@ export class AuthService {
 
       return user;
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
       if (isPrismaClientUniqueConstraintError(error)) {
         throw new CustomUnprocessableEntityException([
           {
@@ -197,34 +210,68 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  // async refreshToken(refreshTokenPayload: any) {
-  //   try {
-  //     const { refreshToken } = refreshTokenPayload;
+  async refreshToken(
+    doRefreshTokenPayload: DoRefreshTokenPayload & {
+      userAgent: string;
+      ip: string;
+    },
+  ) {
+    try {
+      const { refreshToken, userAgent, ip } = doRefreshTokenPayload;
 
-  //     // Kiểm tra refreshToken có hợp lệ không
-  //     const { userId } =
-  //       await this.tokenService.verifyRefreshToken(refreshToken);
+      // Kiểm tra refreshToken có hợp lệ không
+      const { userId } =
+        await this.tokenService.verifyRefreshToken(refreshToken);
 
-  //     // Kiểm tra refreshToken có tồn tại trong database không
-  //     await this.prisma.refreshToken.findUniqueOrThrow({
-  //       where: { token: refreshToken },
-  //     });
+      // Kiểm tra refreshToken có tồn tại trong database không
+      const $refreshToken =
+        await this.authRepository.findUniqueRefreshTokenIncludeUserIncludeRole({
+          token: refreshToken,
+        });
 
-  //     // Xóa refreshToken cũ
-  //     await this.prisma.refreshToken.delete({
-  //       where: { token: refreshToken },
-  //     });
+      if (!$refreshToken) {
+        throw new UnauthorizedException('Refresh token đã bị thu hồi');
+      }
 
-  //     // Tạo mới cặp accessToken và refreshToken
-  //     return await this.generateTokens({ userId });
-  //   } catch (error) {
-  //     if (isPrismaClientNotFoundError(error)) {
-  //       throw new UnauthorizedException('Refresh token has been revoked');
-  //     }
+      const {
+        deviceId,
+        user: { roleId, name: roleName },
+      } = $refreshToken;
 
-  //     throw new UnauthorizedException('Invalid refresh token');
-  //   }
-  // }
+      // Cập nhật device
+      const promiseUpdateDevice = this.authRepository.updateDevice(deviceId, {
+        userAgent,
+        ip,
+      });
+
+      // Xóa refreshToken cũ
+      const promiseDeleteRefreshToken = this.authRepository.deleteRefreshToken({
+        token: refreshToken,
+      });
+
+      // Tạo mới cặp accessToken và refreshToken
+      const promiseGenerateTokens = this.generateTokens({
+        userId,
+        deviceId,
+        roleId,
+        roleName,
+      });
+
+      const [_updateDevice, _deleteRefreshToken, tokens] = await Promise.all([
+        promiseUpdateDevice,
+        promiseDeleteRefreshToken,
+        promiseGenerateTokens,
+      ]);
+
+      return tokens;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new UnauthorizedException('Refresh token không hợp lệ');
+    }
+  }
 
   // async logout(logoutPayload: any) {
   //   try {
@@ -238,11 +285,15 @@ export class AuthService {
 
   //     return { message: 'Logout successful' };
   //   } catch (error) {
+  //     if (error instanceof HttpException) {
+  //       throw error;
+  //     }
+
   //     if (isPrismaClientNotFoundError(error)) {
   //       throw new UnauthorizedException('Refresh token has been revoked');
   //     }
 
-  //     throw new UnauthorizedException('Invalid refresh token');
+  //     throw new UnauthorizedException('Refresh token không hợp lệ');
   //   }
   // }
 }
