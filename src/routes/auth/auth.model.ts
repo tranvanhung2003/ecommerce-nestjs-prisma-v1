@@ -82,13 +82,15 @@ export const SendOtpSchema = VerificationCodeSchema.pick({
 
 export type SendOtpPayload = z.infer<typeof SendOtpSchema>;
 
-// TokenPair
-export const TokenPairSchema = z.object({
+// DoRefreshTokenResponse
+export const DoRefreshTokenResponseSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
 });
 
-export type TokenPairPayload = z.infer<typeof TokenPairSchema>;
+export type DoRefreshTokenResponsePayload = z.infer<
+  typeof DoRefreshTokenResponseSchema
+>;
 
 // Login
 export const LoginSchema = UserSchema.pick({
@@ -99,7 +101,7 @@ export const LoginSchema = UserSchema.pick({
 export type LoginPayload = z.infer<typeof LoginSchema>;
 
 // LoginResponse
-export const LoginResponseSchema = TokenPairSchema;
+export const LoginResponseSchema = DoRefreshTokenResponseSchema;
 
 export type LoginResponsePayload = z.infer<typeof LoginResponseSchema>;
 
@@ -125,6 +127,18 @@ export const CreateRefreshTokenSchema = RefreshTokenSchema.pick({
 export type CreateRefreshTokenPayload = z.infer<
   typeof CreateRefreshTokenSchema
 >;
+
+// DoRefreshToken
+export const DoRefreshTokenSchema = z.object({
+  refreshToken: z.string(),
+});
+
+export type DoRefreshTokenPayload = z.infer<typeof DoRefreshTokenSchema>;
+
+// Logout
+export const LogoutSchema = DoRefreshTokenSchema;
+
+export type LogoutPayload = z.infer<typeof LogoutSchema>;
 
 // Device
 export const DeviceSchema = z.object({
