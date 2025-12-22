@@ -14,6 +14,7 @@ import {
   Kind_InputTokenPayload,
   OutputAccessTokenPayload,
   OutputRefreshTokenPayload,
+  OutputTokenPayload,
   RefreshTokenKind_StringPayload,
   SignOptions,
   TokenKind,
@@ -79,7 +80,7 @@ export class TokenService {
   private async verifyToken(
     tokenKind_stringPayload: TokenKind_StringPayload,
     verifyOptions: VerifyOptions,
-  ) {
+  ): Promise<OutputTokenPayload> {
     const { payload } = tokenKind_stringPayload;
 
     switch (tokenKind_stringPayload.kind) {
