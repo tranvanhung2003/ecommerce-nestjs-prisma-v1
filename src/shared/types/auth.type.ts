@@ -9,3 +9,7 @@ export type AuthTypeDecoratorPayload = {
   authTypes: AuthTypeType[];
   options: { condition: ConditionGuardType };
 };
+
+export interface AssignUserPayload {
+  assignUser: boolean;
+}

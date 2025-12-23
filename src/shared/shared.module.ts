@@ -6,6 +6,7 @@ import { CatchEverythingFilter } from './filters/catch-everything.filter';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { AccessTokenGuard } from './guards/access-token.guard';
 import { ApiKeyGuard } from './guards/api-key.guard';
+import { AssignUserGuard } from './guards/assign-user.guard';
 import { AuthenticationGuard } from './guards/authentication.guard';
 import { TransformInterceptor } from './interceptors/transform.interceptor';
 import { CustomZodValidationPipe } from './pipes/custom-zod-validation.pipe';
@@ -25,7 +26,11 @@ const sharedServices: Type[] = [
 ];
 
 // Services provided but not exported
-const provideOnlyServices: Type[] = [AccessTokenGuard, ApiKeyGuard];
+const provideOnlyServices: Type[] = [
+  AccessTokenGuard,
+  AssignUserGuard,
+  ApiKeyGuard,
+];
 
 // Global guards
 const sharedAppGuards: Type[] = [AuthenticationGuard];

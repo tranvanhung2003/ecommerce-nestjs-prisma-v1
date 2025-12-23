@@ -9,7 +9,9 @@ import {
 import { ZodSerializerDto } from 'nestjs-zod';
 import { Auth, IsPublic } from 'src/shared/decorators/auth.decorator';
 import { UserAgent } from 'src/shared/decorators/user-agent.decorator';
+import { User } from 'src/shared/decorators/user.decorator';
 import { MessageResponseDto } from 'src/shared/dtos/response.dto';
+import type { OutputAccessTokenPayload } from 'src/shared/types/jwt.type';
 import {
   DoRefreshTokenDto,
   DoRefreshTokenResponseDto,
@@ -40,13 +42,15 @@ export class AuthController {
   }
 
   @Post('login')
+  @IsPublic({ assignUser: true })
   @ZodSerializerDto(LoginResponseDto)
   login(
     @Body() loginDto: LoginDto,
     @UserAgent() userAgent: string,
     @Ip() ip: string,
+    @User() user: OutputAccessTokenPayload,
   ) {
-    return this.authService.login({ ...loginDto, userAgent, ip });
+    return this.authService.login({ ...loginDto, userAgent, ip, user });
   }
 
   @Post('refresh-token')

@@ -14,7 +14,10 @@ import { SharedUserRepository } from 'src/shared/repositories/shared-user.reposi
 import { EmailService } from 'src/shared/services/email.service';
 import { HashingService } from 'src/shared/services/hashing.service';
 import { TokenService } from 'src/shared/services/token.service';
-import { InputAccessTokenPayload } from 'src/shared/types/jwt.type';
+import {
+  InputAccessTokenPayload,
+  OutputAccessTokenPayload,
+} from 'src/shared/types/jwt.type';
 import {
   DoRefreshTokenPayload,
   LoginPayload,
@@ -138,8 +141,16 @@ export class AuthService {
   }
 
   async login(
-    compositePayload: LoginPayload & { userAgent: string; ip: string },
+    compositePayload: LoginPayload & {
+      userAgent: string;
+      ip: string;
+      user: OutputAccessTokenPayload;
+    },
   ) {
+    if (compositePayload.user) {
+      throw new UnauthorizedException('Người dùng đã đăng nhập rồi');
+    }
+
     const user = await this.authRepository.findUniqueUserIncludeRole({
       email: compositePayload.email,
     });

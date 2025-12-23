@@ -11,23 +11,26 @@ import { isHttpException, isNull, isUndefined } from '../helpers/helpers';
 import { AuthTypeDecoratorPayload } from '../types/auth.type';
 import { AccessTokenGuard } from './access-token.guard';
 import { ApiKeyGuard } from './api-key.guard';
+import { AssignUserGuard } from './assign-user.guard';
 
-interface BooleanCanActivate extends CanActivate {
+interface TrueCanActivate extends CanActivate {
   canActivate(context: ExecutionContext): true | Promise<true>;
 }
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
-  private readonly authGuardsMap: Record<string, BooleanCanActivate>;
+  private readonly authGuardsMap: Record<string, TrueCanActivate>;
 
   constructor(
     private readonly reflector: Reflector,
     private readonly accessTokenGuard: AccessTokenGuard,
     private readonly apiKeyGuard: ApiKeyGuard,
+    private readonly assignUserGuard: AssignUserGuard,
   ) {
     this.authGuardsMap = {
       [AuthType.BEARER]: this.accessTokenGuard,
       [AuthType.API_KEY]: this.apiKeyGuard,
+      [AuthType.ASSIGN_USER]: this.assignUserGuard,
     };
   }
 
