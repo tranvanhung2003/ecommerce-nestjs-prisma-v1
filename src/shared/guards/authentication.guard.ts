@@ -8,7 +8,7 @@ import { Reflector } from '@nestjs/core';
 import { AuthType, ConditionGuard } from '../constants/auth.constant';
 import { AUTH_TYPE_KEY } from '../decorators/auth.decorator';
 import { isHttpException, isNull, isUndefined } from '../helpers/helpers';
-import { AuthTypeDecoratorPayload } from '../types/auth.type';
+import { AuthTypeDecoratorPayload, AuthTypeType } from '../types/auth.type';
 import { AccessTokenGuard } from './access-token.guard';
 import { ApiKeyGuard } from './api-key.guard';
 import { AssignUserGuard } from './assign-user.guard';
@@ -49,9 +49,9 @@ export class AuthenticationGuard implements CanActivate {
       };
     }
 
-    const guards = authTypeValue.authTypes.map(
-      (authType) => this.authGuardsMap[authType],
-    );
+    const authTypes: AuthTypeType[] = authTypeValue.authTypes;
+
+    const guards = authTypes.map((authType) => this.authGuardsMap[authType]);
 
     const promiseGuards: Promise<[boolean, string]>[] = guards.map(
       async (guard) => {
