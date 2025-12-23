@@ -1,13 +1,13 @@
 import {
   CanActivate,
   ExecutionContext,
-  HttpException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthType, ConditionGuard } from '../constants/auth.constant';
 import { AUTH_TYPE_KEY } from '../decorators/auth.decorator';
+import { isHttpException } from '../helpers/helpers';
 import { AuthTypeDecoratorPayload } from '../types/auth.type';
 import { AccessTokenGuard } from './access-token.guard';
 import { ApiKeyGuard } from './api-key.guard';
@@ -53,7 +53,7 @@ export class AuthenticationGuard implements CanActivate {
 
           return [result, ''] as [boolean, string];
         } catch (error) {
-          if (error instanceof HttpException) {
+          if (isHttpException(error)) {
             return [false, error.message] as [boolean, string];
           } else {
             return [false, 'Unauthorized'] as [boolean, string];

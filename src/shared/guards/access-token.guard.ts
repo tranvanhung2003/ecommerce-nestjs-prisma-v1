@@ -1,12 +1,12 @@
 import {
   CanActivate,
   ExecutionContext,
-  HttpException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { REQUEST_USER_KEY } from '../constants/auth.constant';
+import { throwIfHttpException } from '../helpers/helpers';
 import { TokenService } from '../services/token.service';
 
 @Injectable()
@@ -29,9 +29,7 @@ export class AccessTokenGuard implements CanActivate {
 
       return true;
     } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
+      throwIfHttpException(error);
 
       throw new UnauthorizedException('Invalid or expired access token');
     }

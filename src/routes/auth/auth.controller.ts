@@ -8,11 +8,13 @@ import {
 } from '@nestjs/common';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { UserAgent } from 'src/shared/decorators/user-agent.decorator';
+import { MessageResponseDto } from 'src/shared/dtos/response.dto';
 import {
   DoRefreshTokenDto,
   DoRefreshTokenResponseDto,
   LoginDto,
   LoginResponseDto,
+  LogoutDto,
   RegisterDto,
   RegisterResponseDto,
   SendOtpDto,
@@ -45,8 +47,8 @@ export class AuthController {
   }
 
   @Post('refresh-token')
-  @ZodSerializerDto(DoRefreshTokenResponseDto)
   @HttpCode(HttpStatus.OK)
+  @ZodSerializerDto(DoRefreshTokenResponseDto)
   refreshToken(
     @Body() doRefreshTokenDto: DoRefreshTokenDto,
     @UserAgent() userAgent: string,
@@ -59,8 +61,9 @@ export class AuthController {
     });
   }
 
-  // @Post('logout')
-  // async logout(@Body() logoutDto: any) {
-  //   return this.authService.logout(logoutDto);
-  // }
+  @Post('logout')
+  @ZodSerializerDto(MessageResponseDto)
+  logout(@Body() logoutDto: LogoutDto) {
+    return this.authService.logout(logoutDto);
+  }
 }

@@ -1,4 +1,5 @@
 import {
+  HttpException,
   HttpExceptionOptions,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -21,21 +22,15 @@ export class CustomUnprocessableEntityException extends UnprocessableEntityExcep
   }
 }
 
-function isPrismaClientKnownRequestError(
-  error: any,
-): error is Prisma.PrismaClientKnownRequestError {
+function isPrismaClientKnownRequestError(error: any) {
   return error instanceof Prisma.PrismaClientKnownRequestError;
 }
 
-export function isPrismaClientUniqueConstraintError(
-  error: any,
-): error is Prisma.PrismaClientKnownRequestError {
+export function isPrismaClientUniqueConstraintError(error: any) {
   return isPrismaClientKnownRequestError(error) && error.code === 'P2002';
 }
 
-export function isPrismaClientNotFoundError(
-  error: any,
-): error is Prisma.PrismaClientKnownRequestError {
+export function isPrismaClientNotFoundError(error: any) {
   return isPrismaClientKnownRequestError(error) && error.code === 'P2025';
 }
 
@@ -45,4 +40,14 @@ export function generateOtp() {
 
 export function assertNever(_x: never): never {
   throw new Error('This code path should never be reached.');
+}
+
+export function isHttpException(error: any) {
+  return error instanceof HttpException;
+}
+
+export function throwIfHttpException(error: any) {
+  if (isHttpException(error)) {
+    throw error;
+  }
 }
