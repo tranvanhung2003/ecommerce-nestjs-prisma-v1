@@ -7,6 +7,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { ZodSerializerDto } from 'nestjs-zod';
+import { Auth, IsPublic } from 'src/shared/decorators/auth.decorator';
 import { UserAgent } from 'src/shared/decorators/user-agent.decorator';
 import { MessageResponseDto } from 'src/shared/dtos/response.dto';
 import {
@@ -21,6 +22,7 @@ import {
 } from './auth.dto';
 import { AuthService } from './auth.service';
 
+@IsPublic()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -63,6 +65,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @Auth()
   @ZodSerializerDto(MessageResponseDto)
   logout(@Body() logoutDto: LogoutDto) {
     return this.authService.logout(logoutDto);
