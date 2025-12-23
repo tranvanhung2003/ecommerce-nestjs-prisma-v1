@@ -32,6 +32,7 @@ export class AuthController {
   }
 
   @Post('otp')
+  @ZodSerializerDto(MessageResponseDto)
   sendOtp(@Body() sendOtpDto: SendOtpDto) {
     return this.authService.sendOtp(sendOtpDto);
   }

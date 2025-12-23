@@ -110,18 +110,17 @@ export class AuthService {
 
     const otpCode = generateOtp();
 
-    const verificationCode =
-      await this.authRepository.createOrUpdateVerificationCode({
-        email: sendOtpPayload.email,
-        code: otpCode,
-        type: sendOtpPayload.type,
-        expiresAt: addMilliseconds(
-          new Date(),
-          ms(envConfig.OTP_EXPIRES_IN as ms.StringValue),
-        ),
-      });
+    await this.authRepository.createOrUpdateVerificationCode({
+      email: sendOtpPayload.email,
+      code: otpCode,
+      type: sendOtpPayload.type,
+      expiresAt: addMilliseconds(
+        new Date(),
+        ms(envConfig.OTP_EXPIRES_IN as ms.StringValue),
+      ),
+    });
 
-    const { data: _, error } = await this.emailService.sendOtp({
+    const { error } = await this.emailService.sendOtp({
       email: sendOtpPayload.email,
       code: otpCode,
     });
@@ -135,7 +134,7 @@ export class AuthService {
       ]);
     }
 
-    return verificationCode;
+    return { message: 'Gửi mã OTP thành công' };
   }
 
   async login(
