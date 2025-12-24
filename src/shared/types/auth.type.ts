@@ -1,23 +1,23 @@
 import { AuthType, ConditionGuard } from '../constants/auth.constant';
 
-export type AuthTypeType = (typeof AuthType)[keyof typeof AuthType];
+export type AuthTypeValue = (typeof AuthType)[keyof typeof AuthType];
 
-export type ConditionGuardType =
+export type ConditionGuardValue =
   (typeof ConditionGuard)[keyof typeof ConditionGuard];
 
 // ----------------------------------------------------------------------------------------------------
 
 export interface AuthDecoratorPayload {
-  authTypes: Exclude<AuthTypeType, AuthType['ASSIGN_USER']>[];
-  options: { condition: ConditionGuardType };
+  authTypes: Exclude<AuthTypeValue, AuthType['ASSIGN_USER']>[];
+  options: { condition: ConditionGuardValue };
 }
 
 export type IsPublicDecoratorPayload = {
   authTypes: [AuthType['ASSIGN_USER']];
-  options: { condition: Extract<ConditionGuardType, ConditionGuard['AND']> };
+  options: { condition: Extract<ConditionGuardValue, ConditionGuard['AND']> };
 };
 
-export type AuthTypeDecoratorPayload =
+export type CompositeAuthDecoratorPayload =
   | AuthDecoratorPayload
   | IsPublicDecoratorPayload;
 
