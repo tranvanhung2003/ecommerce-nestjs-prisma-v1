@@ -21,6 +21,6 @@ export type CompositeAuthDecoratorPayload =
   | AuthDecoratorPayload
   | IsPublicDecoratorPayload;
 
-export interface AssignUserPayload {
+export interface AssignUserOptions {
   assignUser: boolean;
 }
