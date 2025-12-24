@@ -222,3 +222,16 @@ export const GetAuthorizationUrlResponseSchema = z.object({
 export type GetAuthorizationUrlResponsePayload = z.infer<
   typeof GetAuthorizationUrlResponseSchema
 >;
+
+// GoogleCallback
+export const GoogleCallbackSchema = z.object({
+  code: z.string(),
+  state: z.string(),
+});
+
+export type GoogleCallbackPayload = z.infer<typeof GoogleCallbackSchema>;
+
+// GoogleAuthState
+export const GoogleAuthStateSchema = GetAuthorizationUrlSchema;
+
+export type GoogleAuthStatePayload = z.infer<typeof GoogleAuthStateSchema>;

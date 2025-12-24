@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Ip,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { Auth, IsPublic } from 'src/shared/decorators/auth.decorator';
@@ -85,5 +86,10 @@ export class AuthController {
   @ZodSerializerDto(GetAuthorizationUrlResponseDto)
   getAuthorizationUrl(@UserAgent() userAgent: string, @Ip() ip: string) {
     return this.googleService.getAuthorizationUrl({ userAgent, ip });
+  }
+
+  @Get('google/callback')
+  googleCallback(@Query('code') code: string, @Query('state') state: string) {
+    return this.googleService.googleCallback({ code, state });
   }
 }
