@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Ip,
@@ -15,6 +16,7 @@ import type { OutputAccessTokenPayload } from 'src/shared/types/jwt.type';
 import {
   DoRefreshTokenDto,
   DoRefreshTokenResponseDto,
+  GetAuthorizationUrlResponseDto,
   LoginDto,
   LoginResponseDto,
   LogoutDto,
@@ -23,11 +25,15 @@ import {
   SendOtpDto,
 } from './auth.dto';
 import { AuthService } from './auth.service';
+import { GoogleService } from './google.service';
 
 @IsPublic()
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly googleService: GoogleService,
+  ) {}
 
   @Post('register')
   @ZodSerializerDto(RegisterResponseDto)
@@ -73,5 +79,11 @@ export class AuthController {
   @ZodSerializerDto(MessageResponseDto)
   logout(@Body() logoutDto: LogoutDto) {
     return this.authService.logout(logoutDto);
+  }
+
+  @Get('google-link')
+  @ZodSerializerDto(GetAuthorizationUrlResponseDto)
+  getAuthorizationUrl(@UserAgent() userAgent: string, @Ip() ip: string) {
+    return this.googleService.getAuthorizationUrl({ userAgent, ip });
   }
 }

@@ -203,3 +203,22 @@ export const RefreshTokenIncludeUserIncludeRoleSchema =
 export type RefreshTokenIncludeUserIncludeRolePayload = z.infer<
   typeof RefreshTokenIncludeUserIncludeRoleSchema
 >;
+
+// GetAuthorizationUrl
+export const GetAuthorizationUrlSchema = DeviceSchema.pick({
+  userAgent: true,
+  ip: true,
+});
+
+export type GetAuthorizationUrlPayload = z.infer<
+  typeof GetAuthorizationUrlSchema
+>;
+
+// GetAuthorizationUrlResponse
+export const GetAuthorizationUrlResponseSchema = z.object({
+  url: z.url(),
+});
+
+export type GetAuthorizationUrlResponsePayload = z.infer<
+  typeof GetAuthorizationUrlResponseSchema
+>;
