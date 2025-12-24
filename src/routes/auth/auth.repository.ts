@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { VerificationCodeKind } from 'src/generated/prisma/enums';
+import { UserPayload } from 'src/shared/models/shared-user.model';
 import {
   FindUniqueUserPayload,
   FindUniqueUserSchema,
@@ -18,7 +19,6 @@ import {
   DevicePayload,
   RefreshTokenIncludeUserIncludeRolePayload,
   RefreshTokenPayload,
-  RegisterResponsePayload,
   UpdateDevicePayload,
   UpdateDeviceSchema,
   UserIncludeRolePayload,
@@ -59,16 +59,23 @@ type DeleteRefreshTokenPayload = z.infer<typeof DeleteRefreshTokenSchema>;
 export class AuthRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createUser(
-    createUserPayload: CreateUserPayload,
-  ): Promise<RegisterResponsePayload> {
+  async createUser(createUserPayload: CreateUserPayload): Promise<UserPayload> {
     const $createUserPayload = CreateUserSchema.parse(createUserPayload);
 
     return this.prisma.user.create({
       data: $createUserPayload,
-      omit: {
-        password: true,
-        totpSecret: true,
+    });
+  }
+
+  async createUserIncludeRole(
+    createUserPayload: CreateUserPayload,
+  ): Promise<UserIncludeRolePayload> {
+    const $createUserPayload = CreateUserSchema.parse(createUserPayload);
+
+    return this.prisma.user.create({
+      data: $createUserPayload,
+      include: {
+        role: true,
       },
     });
   }

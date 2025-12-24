@@ -6,6 +6,7 @@ import {
   GetAuthorizationUrlPayload,
   GoogleAuthStatePayload,
   GoogleCallbackPayload,
+  UserIncludeRolePayload,
 } from './auth.model';
 import { AuthRepository } from './auth.repository';
 import { AuthService } from './auth.service';
@@ -81,9 +82,10 @@ export class GoogleService {
       }
 
       // Kiểm tra user trong database
-      let user = await this.authRepository.findUniqueUserIncludeRole({
-        email: userInfo.email,
-      });
+      let user: UserIncludeRolePayload | null =
+        await this.authRepository.findUniqueUserIncludeRole({
+          email: userInfo.email,
+        });
 
       // Nếu không có user thì đây là người dùng mới, tiến hành tạo user mới
       if (!user) {

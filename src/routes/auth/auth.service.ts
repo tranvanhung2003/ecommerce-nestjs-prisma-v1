@@ -74,9 +74,10 @@ export class AuthService {
 
       const { confirmPassword, code, ...$registerPayload } = registerPayload;
 
-      const user = await this.authRepository.createUser({
+      const user = await this.authRepository.createUserIncludeRole({
         ...$registerPayload,
         password: hashedPassword,
+        avatar: null,
         roleId: clientRoleId,
       });
 

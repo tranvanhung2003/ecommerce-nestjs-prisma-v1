@@ -45,6 +45,7 @@ export const CreateUserSchema = UserSchema.pick({
   name: true,
   password: true,
   phoneNumber: true,
+  avatar: true,
   roleId: true,
 });
 
