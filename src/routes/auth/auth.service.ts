@@ -243,7 +243,10 @@ export class AuthService {
 
       const {
         deviceId,
-        user: { roleId, name: roleName },
+        user: {
+          roleId,
+          role: { name: roleName },
+        },
       } = $refreshToken;
 
       // Cập nhật device
