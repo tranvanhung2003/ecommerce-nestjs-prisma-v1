@@ -135,6 +135,9 @@ export type DoRefreshTokenResponsePayload = z.infer<
 export const LoginSchema = UserSchema.pick({
   email: true,
   password: true,
+}).safeExtend({
+  totpCode: z.string().length(6).optional(), // 2FA code
+  code: z.string().length(6).optional(), // Email OTP code
 });
 
 export type LoginPayload = z.infer<typeof LoginSchema>;
@@ -283,7 +286,6 @@ export interface RegisterWithGooglePayload extends Omit<
 }
 
 // LoginWithGoogle
-
 export const LoginWithGoogleSchema = z.object({
   user: User$RoleSchema,
   devicePayload: DeviceSchema.pick({
@@ -293,3 +295,34 @@ export const LoginWithGoogleSchema = z.object({
 });
 
 export type LoginWithGooglePayload = z.infer<typeof LoginWithGoogleSchema>;
+
+// DisableTwoFactorAuth
+export const DisableTwoFactorAuthSchema = z
+  .object({
+    totpCode: z.string().length(6).optional(), // 2FA code
+    code: z.string().length(6).optional(), // Email OTP code
+  })
+  .superRefine(({ totpCode, code }, ctx) => {
+    // Chỉ được gửi lên một trong hai trường totpCode hoặc code
+    if ((totpCode && code) || (!totpCode && !code)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Chỉ được gửi lên một trong hai trường totpCode hoặc code',
+        path: ['totpCode', 'code'],
+      });
+    }
+  });
+
+export type DisableTwoFactorAuthPayload = z.infer<
+  typeof DisableTwoFactorAuthSchema
+>;
+
+// SetupTwoFactorAuthResponse
+export const SetupTwoFactorAuthResponseSchema = z.object({
+  secret: z.string(),
+  url: z.string(),
+});
+
+export type SetupTwoFactorAuthResponsePayload = z.infer<
+  typeof SetupTwoFactorAuthResponseSchema
+>;
