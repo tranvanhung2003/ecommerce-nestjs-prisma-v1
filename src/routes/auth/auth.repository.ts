@@ -17,11 +17,11 @@ import {
   CreateVerificationCodePayload,
   CreateVerificationCodeSchema,
   DevicePayload,
-  RefreshTokenIncludeUserIncludeRolePayload,
+  RefreshToken$User$RolePayload,
   RefreshTokenPayload,
   UpdateDevicePayload,
   UpdateDeviceSchema,
-  UserIncludeRolePayload,
+  User$RolePayload,
   VerificationCodePayload,
 } from './auth.model';
 
@@ -67,9 +67,9 @@ export class AuthRepository {
     });
   }
 
-  async createUserIncludeRole(
+  async createUser$Role(
     createUserPayload: CreateUserPayload,
-  ): Promise<UserIncludeRolePayload> {
+  ): Promise<User$RolePayload> {
     const $createUserPayload = CreateUserSchema.parse(createUserPayload);
 
     return this.prisma.user.create({
@@ -127,9 +127,9 @@ export class AuthRepository {
     });
   }
 
-  async findUniqueUserIncludeRole(
+  async findUniqueUser$Role(
     findUniqueUserPayload: FindUniqueUserPayload,
-  ): Promise<UserIncludeRolePayload | null> {
+  ): Promise<User$RolePayload | null> {
     const $findUniqueUserPayload = FindUniqueUserSchema.parse(
       findUniqueUserPayload,
     );
@@ -142,9 +142,9 @@ export class AuthRepository {
     });
   }
 
-  async findUniqueRefreshTokenIncludeUserIncludeRole(
+  async findUniqueRefreshToken$User$Role(
     findUniqueRefreshTokenPayload: FindUniqueRefreshTokenPayload,
-  ): Promise<RefreshTokenIncludeUserIncludeRolePayload | null> {
+  ): Promise<RefreshToken$User$RolePayload | null> {
     const $findUniqueRefreshTokenPayload = FindUniqueRefreshTokenSchema.parse(
       findUniqueRefreshTokenPayload,
     );

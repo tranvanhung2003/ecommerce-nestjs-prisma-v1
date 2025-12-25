@@ -188,21 +188,20 @@ export const RoleSchema = z.object({
 
 export type RolePayload = z.infer<typeof RoleSchema>;
 
-// UserIncludeRole
-export const UserIncludeRoleSchema = UserSchema.safeExtend({
+// User$Role
+export const User$RoleSchema = UserSchema.safeExtend({
   role: RoleSchema,
 });
 
-export type UserIncludeRolePayload = z.infer<typeof UserIncludeRoleSchema>;
+export type User$RolePayload = z.infer<typeof User$RoleSchema>;
 
-// RefreshTokenIncludeUserIncludeRole
-export const RefreshTokenIncludeUserIncludeRoleSchema =
-  RefreshTokenSchema.safeExtend({
-    user: UserIncludeRoleSchema,
-  });
+// RefreshToken$User$Role
+export const RefreshToken$User$RoleSchema = RefreshTokenSchema.safeExtend({
+  user: User$RoleSchema,
+});
 
-export type RefreshTokenIncludeUserIncludeRolePayload = z.infer<
-  typeof RefreshTokenIncludeUserIncludeRoleSchema
+export type RefreshToken$User$RolePayload = z.infer<
+  typeof RefreshToken$User$RoleSchema
 >;
 
 // GetAuthorizationUrl

@@ -74,7 +74,7 @@ export class AuthService {
 
       const { confirmPassword, code, ...$registerPayload } = registerPayload;
 
-      const user = await this.authRepository.createUserIncludeRole({
+      const user = await this.authRepository.createUser$Role({
         ...$registerPayload,
         password: hashedPassword,
         avatar: null,
@@ -152,7 +152,7 @@ export class AuthService {
       throw new UnauthorizedException('Người dùng đã đăng nhập rồi');
     }
 
-    const user = await this.authRepository.findUniqueUserIncludeRole({
+    const user = await this.authRepository.findUniqueUser$Role({
       email: compositePayload.email,
     });
 
@@ -233,7 +233,7 @@ export class AuthService {
 
       // Kiểm tra refreshToken có tồn tại trong database không
       const $refreshToken =
-        await this.authRepository.findUniqueRefreshTokenIncludeUserIncludeRole({
+        await this.authRepository.findUniqueRefreshToken$User$Role({
           token: refreshToken,
         });
 
