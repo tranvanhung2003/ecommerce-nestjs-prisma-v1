@@ -3,6 +3,7 @@ import z from 'zod';
 import { UserPayload } from '../models/shared-user.model';
 import { PrismaService } from '../services/prisma.service';
 
+// FindUniqueUser
 export const FindUniqueUserSchema = z.union([
   z.object({ id: z.number() }),
   z.object({ email: z.email() }),

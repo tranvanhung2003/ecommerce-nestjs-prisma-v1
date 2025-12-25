@@ -20,6 +20,7 @@ import type { OutputAccessTokenPayload } from 'src/shared/types/jwt.type';
 import {
   DoRefreshTokenDto,
   DoRefreshTokenResponseDto,
+  ForgotPasswordDto,
   GetAuthorizationUrlResponseDto,
   LoginDto,
   LoginResponseDto,
@@ -126,5 +127,11 @@ export class AuthController {
       const url = `${envConfig.GOOGLE_CLIENT_REDIRECT_URI}?${params.toString()}`;
       return res.redirect(url);
     }
+  }
+
+  @Post('forgot-password')
+  @ZodSerializerDto(MessageResponseDto)
+  forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotPasswordDto);
   }
 }

@@ -24,13 +24,34 @@ export const RegisterSchema = UserSchema.pick({
     if (password !== confirmPassword) {
       ctx.addIssue({
         code: 'custom',
-        message: 'Password and confirm password do not match',
+        message: 'Mật khẩu và xác nhận mật khẩu không khớp',
         path: ['confirmPassword'],
       });
     }
   });
 
 export type RegisterPayload = z.infer<typeof RegisterSchema>;
+
+// ForgotPassword
+export const ForgotPasswordSchema = UserSchema.pick({
+  email: true,
+})
+  .safeExtend({
+    code: z.string().length(6),
+    newPassword: z.string().min(6).max(100),
+    confirmNewPassword: z.string().min(6).max(100),
+  })
+  .superRefine(({ newPassword, confirmNewPassword }, ctx) => {
+    if (newPassword !== confirmNewPassword) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Mật khẩu mới và xác nhận mật khẩu mới không khớp',
+        path: ['confirmNewPassword'],
+      });
+    }
+  });
+
+export type ForgotPasswordPayload = z.infer<typeof ForgotPasswordSchema>;
 
 // RegisterResponse
 export const RegisterResponseSchema = UserSchema.omit({
@@ -51,6 +72,11 @@ export const CreateUserSchema = UserSchema.pick({
 });
 
 export type CreateUserPayload = z.infer<typeof CreateUserSchema>;
+
+// UpdateUser
+export const UpdateUserSchema = CreateUserSchema.partial();
+
+export type UpdateUserPayload = z.infer<typeof UpdateUserSchema>;
 
 // VerificationCode
 export const VerificationCodeSchema = z.object({
@@ -74,6 +100,17 @@ export const CreateVerificationCodeSchema = VerificationCodeSchema.pick({
 
 export type CreateVerificationCodePayload = z.infer<
   typeof CreateVerificationCodeSchema
+>;
+
+// ValidateVerificationCode
+export const ValidateVerificationCodeSchema = VerificationCodeSchema.pick({
+  email: true,
+  code: true,
+  type: true,
+});
+
+export type ValidateVerificationCodePayload = z.infer<
+  typeof ValidateVerificationCodeSchema
 >;
 
 // SendOtp
