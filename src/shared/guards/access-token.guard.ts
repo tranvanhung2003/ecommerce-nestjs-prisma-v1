@@ -19,7 +19,7 @@ export class AccessTokenGuard implements CanActivate {
       const accessToken = request.headers.authorization?.split(' ')[1];
 
       if (!accessToken) {
-        throw new UnauthorizedException('Access token is missing');
+        throw new UnauthorizedException('Access token bị thiếu');
       }
 
       const verifiedAccessToken =
@@ -31,7 +31,9 @@ export class AccessTokenGuard implements CanActivate {
     } catch (error) {
       throwIfHttpException(error);
 
-      throw new UnauthorizedException('Invalid or expired access token');
+      throw new UnauthorizedException(
+        'Access token không hợp lệ hoặc đã hết hạn',
+      );
     }
   }
 }
