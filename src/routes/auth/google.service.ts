@@ -2,14 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 import envConfig from 'src/shared/config';
+import { HashingService } from 'src/shared/services/hashing.service';
+import { v4 as uuidv4 } from 'uuid';
 import {
   GetAuthorizationUrlPayload,
   GoogleAuthStatePayload,
   GoogleCallbackPayload,
+  LoginWithGooglePayload,
+  RegisterWithGooglePayload,
   User$RolePayload,
 } from './auth.model';
 import { AuthRepository } from './auth.repository';
 import { AuthService } from './auth.service';
+import { RolesService } from './roles.service';
 
 @Injectable()
 export class GoogleService {
@@ -17,6 +22,8 @@ export class GoogleService {
 
   constructor(
     private readonly authRepository: AuthRepository,
+    private readonly rolesService: RolesService,
+    private readonly hashingService: HashingService,
     private readonly authService: AuthService,
   ) {
     this.oauth2Client = new google.auth.OAuth2({
@@ -77,7 +84,7 @@ export class GoogleService {
       const { data: userInfo } = await oauth2.userinfo.get();
 
       // Kiểm tra thông tin email
-      if (!userInfo.email || !userInfo.verified_email) {
+      if (!userInfo.email) {
         throw new Error('Không thể lấy thông tin người dùng từ Google');
       }
 
@@ -87,9 +94,65 @@ export class GoogleService {
           email: userInfo.email,
         });
 
-      // Nếu không có user thì đây là người dùng mới, tiến hành tạo user mới
+      // Nếu không có user thì đây là người dùng mới, tiến hành register với Google
       if (!user) {
+        user = await this.registerWithGoogle(
+          userInfo as RegisterWithGooglePayload,
+        );
       }
-    } catch (error) {}
+
+      // Login với Google
+      const authTokens = await this.loginWithGoogle({
+        user,
+        devicePayload: parsedState,
+      });
+
+      return authTokens;
+    } catch (error) {
+      console.error('Lỗi Google Callback:', error);
+
+      throw error;
+    }
+  }
+
+  async registerWithGoogle(
+    registerWithGooglePayload: RegisterWithGooglePayload,
+  ) {
+    const clientRoleId = this.rolesService.getClientRoleId();
+
+    // Random password vì người dùng sẽ đăng nhập bằng Google OAuth
+    const randomPassword = uuidv4();
+
+    const hashedPassword = await this.hashingService.hash(randomPassword);
+
+    const user = await this.authRepository.createUser$Role({
+      name: registerWithGooglePayload.name ?? '',
+      email: registerWithGooglePayload.email,
+      password: hashedPassword,
+      phoneNumber: '',
+      avatar: registerWithGooglePayload.picture ?? null,
+      roleId: clientRoleId,
+    });
+
+    return user;
+  }
+
+  async loginWithGoogle(loginWithGooglePayload: LoginWithGooglePayload) {
+    const { user, devicePayload } = loginWithGooglePayload;
+
+    const device = await this.authRepository.createDevice({
+      userId: user.id,
+      userAgent: devicePayload.userAgent,
+      ip: devicePayload.ip,
+    });
+
+    const tokens = await this.authService.generateTokens({
+      userId: user.id,
+      deviceId: device.id,
+      roleId: user.role.id,
+      roleName: user.role.name,
+    });
+
+    return tokens;
   }
 }

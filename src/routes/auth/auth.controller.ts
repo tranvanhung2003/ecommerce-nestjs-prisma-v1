@@ -7,8 +7,11 @@ import {
   Ip,
   Post,
   Query,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { ZodSerializerDto } from 'nestjs-zod';
+import envConfig from 'src/shared/config';
 import { Auth, IsPublic } from 'src/shared/decorators/auth.decorator';
 import { UserAgent } from 'src/shared/decorators/user-agent.decorator';
 import { User } from 'src/shared/decorators/user.decorator';
@@ -89,7 +92,39 @@ export class AuthController {
   }
 
   @Get('google/callback')
-  googleCallback(@Query('code') code: string, @Query('state') state: string) {
-    return this.googleService.googleCallback({ code, state });
+  async googleCallback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+    @Res() res: Response,
+  ) {
+    const getVarName = (varObj: object) => Object.keys(varObj)[0];
+
+    try {
+      const result = await this.googleService.googleCallback({ code, state });
+
+      const { accessToken, refreshToken } = result;
+      const [accessTokenKey, refreshTokenKey] = [
+        getVarName({ accessToken }),
+        getVarName({ refreshToken }),
+      ];
+      const params = new URLSearchParams();
+      params.append(accessTokenKey, accessToken);
+      params.append(refreshTokenKey, refreshToken);
+
+      const url = `${envConfig.GOOGLE_CLIENT_REDIRECT_URI}?${params.toString()}`;
+
+      return res.redirect(url);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Đã xảy ra lỗi khi đăng nhập bằng Google, vui lòng thử lại bằng cách khác.';
+      const errorMessageKey = getVarName({ errorMessage });
+      const params = new URLSearchParams();
+      params.append(errorMessageKey, errorMessage);
+
+      const url = `${envConfig.GOOGLE_CLIENT_REDIRECT_URI}?${params.toString()}`;
+      return res.redirect(url);
+    }
   }
 }

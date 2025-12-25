@@ -1,3 +1,4 @@
+import { oauth2_v2 } from 'googleapis';
 import {
   Device,
   RefreshToken,
@@ -235,3 +236,23 @@ export type GoogleCallbackPayload = z.infer<typeof GoogleCallbackSchema>;
 export const GoogleAuthStateSchema = GetAuthorizationUrlSchema;
 
 export type GoogleAuthStatePayload = z.infer<typeof GoogleAuthStateSchema>;
+
+// RegisterWithGoogle
+export interface RegisterWithGooglePayload extends Omit<
+  oauth2_v2.Schema$Userinfo,
+  'email'
+> {
+  email: NonNullable<oauth2_v2.Schema$Userinfo['email']>;
+}
+
+// LoginWithGoogle
+
+export const LoginWithGoogleSchema = z.object({
+  user: User$RoleSchema,
+  devicePayload: DeviceSchema.pick({
+    userAgent: true,
+    ip: true,
+  }),
+});
+
+export type LoginWithGooglePayload = z.infer<typeof LoginWithGoogleSchema>;
