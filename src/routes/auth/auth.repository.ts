@@ -126,17 +126,34 @@ export class AuthRepository {
     const $createVerificationCodePayload = CreateVerificationCodeSchema.parse(
       createVerificationCodePayload,
     );
-    const email_code_type = {
-      email: $createVerificationCodePayload.email,
-      code: $createVerificationCodePayload.code,
-      type: $createVerificationCodePayload.type,
-    };
 
-    return this.prisma.verificationCode.upsert({
-      where: { email_code_type },
-      update: $createVerificationCodePayload,
-      create: $createVerificationCodePayload,
+    const result = await this.prisma.$transaction(async (prisma) => {
+      // Kiểm tra xem mã OTP đã tồn tại chưa
+      const existingCode = await prisma.verificationCode.findFirst({
+        where: {
+          email: $createVerificationCodePayload.email,
+          type: $createVerificationCodePayload.type,
+        },
+      });
+
+      // Nếu tồn tại, cập nhật mã OTP và thời gian hết hạn
+      if (existingCode) {
+        return prisma.verificationCode.update({
+          where: { id: existingCode.id },
+          data: {
+            code: $createVerificationCodePayload.code,
+            expiresAt: $createVerificationCodePayload.expiresAt,
+          },
+        });
+      }
+
+      // Nếu chưa tồn tại, tạo mới mã OTP
+      return prisma.verificationCode.create({
+        data: $createVerificationCodePayload,
+      });
     });
+
+    return result;
   }
 
   async findUniqueVerificationCode(
