@@ -15,6 +15,7 @@ import envConfig from 'src/shared/config';
 import { Auth, IsPublic } from 'src/shared/decorators/auth.decorator';
 import { UserAgent } from 'src/shared/decorators/user-agent.decorator';
 import { User } from 'src/shared/decorators/user.decorator';
+import { EmptyBodyDto } from 'src/shared/dtos/request.dto';
 import { MessageResponseDto } from 'src/shared/dtos/response.dto';
 import type { OutputAccessTokenPayload } from 'src/shared/types/jwt.type';
 import {
@@ -28,6 +29,7 @@ import {
   RegisterDto,
   RegisterResponseDto,
   SendOtpDto,
+  SetupTwoFactorAuthResponseDto,
 } from './auth.dto';
 import { AuthService } from './auth.service';
 import { GoogleService } from './google.service';
@@ -133,5 +135,18 @@ export class AuthController {
   @ZodSerializerDto(MessageResponseDto)
   forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     return this.authService.forgotPassword(forgotPasswordDto);
+  }
+
+  // Ở đây không dùng GET mà dùng POST trong khi body gửi lên là rỗng {}
+  // Vì POST mang ý nghĩa tạo ra cái gì đó, và POST cũng bảo mật hơn GET
+  // Vì GET có thể được kích hoạt thông qua URL trên trình duyệt, POST thì không
+  @Post('2fa/setup')
+  @Auth()
+  @ZodSerializerDto(SetupTwoFactorAuthResponseDto)
+  setupTwoFactorAuth(
+    @Body() _emptyBodyDto: EmptyBodyDto,
+    @User('userId') userId: number,
+  ) {
+    return this.authService.setupTwoFactorAuth(userId);
   }
 }

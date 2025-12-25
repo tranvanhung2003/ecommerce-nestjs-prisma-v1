@@ -14,6 +14,7 @@ import { SharedUserRepository } from 'src/shared/repositories/shared-user.reposi
 import { EmailService } from 'src/shared/services/email.service';
 import { HashingService } from 'src/shared/services/hashing.service';
 import { TokenService } from 'src/shared/services/token.service';
+import { TwoFactorAuthService } from 'src/shared/services/two-factor-auth.service';
 import {
   InputAccessTokenPayload,
   OutputAccessTokenPayload,
@@ -39,6 +40,7 @@ export class AuthService {
     private readonly tokenService: TokenService,
     private readonly sharedUserRepository: SharedUserRepository,
     private readonly emailService: EmailService,
+    private readonly twoFactorAuthService: TwoFactorAuthService,
   ) {}
 
   async register(registerPayload: RegisterPayload) {
@@ -391,5 +393,45 @@ export class AuthService {
     ]);
 
     return { message: 'Cập nhật mật khẩu mới thành công' };
+  }
+
+  async setupTwoFactorAuth(userId: number) {
+    // Lấy thông tin user, kiểm tra user có tồn tại không, xem đã kích hoạt 2FA chưa
+    const user = await this.sharedUserRepository.findUnique({ id: userId });
+
+    if (!user) {
+      throw new CustomUnprocessableEntityException([
+        {
+          message: 'Email không tồn tại',
+          path: 'email',
+        },
+      ]);
+    }
+
+    if (user.totpSecret) {
+      throw new CustomUnprocessableEntityException([
+        {
+          message: 'TOTP đã được kích hoạt trên tài khoản này',
+          path: 'totpCode',
+        },
+      ]);
+    }
+
+    // Tạo secret và URI TOTP
+    const { secret, uri } = this.twoFactorAuthService.generateTotpSecret(
+      user.email,
+    );
+
+    // Cập nhật secret TOTP vào database
+    await this.authRepository.updateUser(
+      { id: userId },
+      { totpSecret: secret },
+    );
+
+    // Trả về secret và URI TOTP
+    return {
+      secret,
+      uri,
+    };
   }
 }

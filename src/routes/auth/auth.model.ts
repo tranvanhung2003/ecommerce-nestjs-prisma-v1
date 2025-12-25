@@ -74,7 +74,11 @@ export const CreateUserSchema = UserSchema.pick({
 export type CreateUserPayload = z.infer<typeof CreateUserSchema>;
 
 // UpdateUser
-export const UpdateUserSchema = CreateUserSchema.partial();
+export const UpdateUserSchema = CreateUserSchema.safeExtend(
+  UserSchema.pick({
+    totpSecret: true,
+  }).shape,
+).partial();
 
 export type UpdateUserPayload = z.infer<typeof UpdateUserSchema>;
 
@@ -320,7 +324,7 @@ export type DisableTwoFactorAuthPayload = z.infer<
 // SetupTwoFactorAuthResponse
 export const SetupTwoFactorAuthResponseSchema = z.object({
   secret: z.string(),
-  url: z.string(),
+  uri: z.string(),
 });
 
 export type SetupTwoFactorAuthResponsePayload = z.infer<

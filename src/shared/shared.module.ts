@@ -15,6 +15,7 @@ import { EmailService } from './services/email.service';
 import { HashingService } from './services/hashing.service';
 import { PrismaService } from './services/prisma.service';
 import { TokenService } from './services/token.service';
+import { TwoFactorAuthService } from './services/two-factor-auth.service';
 
 // Shared services to be exported
 const sharedServices: Type[] = [
@@ -23,6 +24,7 @@ const sharedServices: Type[] = [
   TokenService,
   SharedUserRepository,
   EmailService,
+  TwoFactorAuthService,
 ];
 
 // Services provided but not exported
