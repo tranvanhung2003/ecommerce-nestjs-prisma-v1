@@ -30,12 +30,13 @@ import {
 // FindUniqueVerificationCode
 const FindUniqueVerificationCodeSchema = z.union([
   z.object({
-    email: z.email(),
-    code: z.string(),
-    type: z.enum(VerificationCodeKind),
+    email_code_type: z.object({
+      email: z.email(),
+      code: z.string(),
+      type: z.enum(VerificationCodeKind),
+    }),
   }),
   z.object({ id: z.number() }),
-  z.object({ email: z.email() }),
 ]);
 
 type FindUniqueVerificationCodePayload = z.infer<
@@ -125,9 +126,14 @@ export class AuthRepository {
     const $createVerificationCodePayload = CreateVerificationCodeSchema.parse(
       createVerificationCodePayload,
     );
+    const email_code_type = {
+      email: $createVerificationCodePayload.email,
+      code: $createVerificationCodePayload.code,
+      type: $createVerificationCodePayload.type,
+    };
 
     return this.prisma.verificationCode.upsert({
-      where: { email: $createVerificationCodePayload.email },
+      where: { email_code_type },
       update: $createVerificationCodePayload,
       create: $createVerificationCodePayload,
     });

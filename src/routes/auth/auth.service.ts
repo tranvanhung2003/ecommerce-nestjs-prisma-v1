@@ -68,9 +68,11 @@ export class AuthService {
 
         // Xóa mã OTP đã sử dụng
         this.authRepository.deleteVerificationCode({
-          email: registerPayload.email,
-          code: registerPayload.code,
-          type: VerificationCodeKind.REGISTER,
+          email_code_type: {
+            email: registerPayload.email,
+            code: registerPayload.code,
+            type: VerificationCodeKind.REGISTER,
+          },
         }),
       ]);
 
@@ -95,9 +97,9 @@ export class AuthService {
     validateVerificationCodePayload: ValidateVerificationCodePayload,
   ) {
     const verificationCode =
-      await this.authRepository.findUniqueVerificationCode(
-        validateVerificationCodePayload,
-      );
+      await this.authRepository.findUniqueVerificationCode({
+        email_code_type: validateVerificationCodePayload,
+      });
 
     if (!verificationCode) {
       throw new CustomUnprocessableEntityException([
@@ -380,9 +382,11 @@ export class AuthService {
 
       // Xóa mã OTP đã sử dụng
       this.authRepository.deleteVerificationCode({
-        email,
-        code,
-        type: VerificationCodeKind.FORGOT_PASSWORD,
+        email_code_type: {
+          email,
+          code,
+          type: VerificationCodeKind.FORGOT_PASSWORD,
+        },
       }),
     ]);
 
