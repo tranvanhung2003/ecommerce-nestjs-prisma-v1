@@ -12,7 +12,7 @@ type WithIatAndExp<T> = T & {
   exp: number;
 };
 
-interface Kind_Payload<K, P> {
+interface Kind$Payload<K, P> {
   kind: K;
   payload: P;
 }
@@ -63,32 +63,32 @@ type TokenKind = (typeof TokenKind)[keyof typeof TokenKind];
 
 // ----------------------------------------------------------------------------------------------------
 
-export type Kind_InputAccessTokenPayload = Kind_Payload<
+export type Kind$InputAccessTokenPayload = Kind$Payload<
   TokenKindType['ACCESS_TOKEN'],
   InputAccessTokenPayload
 >;
 
-export type Kind_InputRefreshTokenPayload = Kind_Payload<
+export type Kind$InputRefreshTokenPayload = Kind$Payload<
   TokenKindType['REFRESH_TOKEN'],
   InputRefreshTokenPayload
 >;
 
-export type Kind_InputTokenPayload =
-  | Kind_InputAccessTokenPayload
-  | Kind_InputRefreshTokenPayload;
+export type Kind$InputTokenPayload =
+  | Kind$InputAccessTokenPayload
+  | Kind$InputRefreshTokenPayload;
 
 // ----------------------------------------------------------------------------------------------------
 
-export type AccessTokenKind_StringPayload = Kind_Payload<
+export type AccessTokenKind$StringPayload = Kind$Payload<
   TokenKindType['ACCESS_TOKEN'],
   string
 >;
 
-export type RefreshTokenKind_StringPayload = Kind_Payload<
+export type RefreshTokenKind$StringPayload = Kind$Payload<
   TokenKindType['REFRESH_TOKEN'],
   string
 >;
 
-export type TokenKind_StringPayload =
-  | AccessTokenKind_StringPayload
-  | RefreshTokenKind_StringPayload;
+export type TokenKind$StringPayload =
+  | AccessTokenKind$StringPayload
+  | RefreshTokenKind$StringPayload;

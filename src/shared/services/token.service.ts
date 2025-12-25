@@ -5,20 +5,20 @@ import { v4 as uuidv4 } from 'uuid';
 import envConfig from '../config';
 import { assertNever } from '../helpers/helpers';
 import {
-  AccessTokenKind_StringPayload,
+  AccessTokenKind$StringPayload,
   InputAccessTokenPayload,
   InputAccessTokenSchema,
   InputRefreshTokenPayload,
   InputRefreshTokenSchema,
   InputTokenPayload,
-  Kind_InputTokenPayload,
+  Kind$InputTokenPayload,
   OutputAccessTokenPayload,
   OutputRefreshTokenPayload,
   OutputTokenPayload,
-  RefreshTokenKind_StringPayload,
+  RefreshTokenKind$StringPayload,
   SignOptions,
   TokenKind,
-  TokenKind_StringPayload,
+  TokenKind$StringPayload,
   VerifyOptions,
 } from '../types/jwt.type';
 
@@ -33,12 +33,12 @@ export class TokenService {
   }
 
   private async signToken(
-    kind_inputTokenPayload: Kind_InputTokenPayload,
+    kind$inputTokenPayload: Kind$InputTokenPayload,
     signOptions: SignOptions,
   ) {
-    const { payload } = kind_inputTokenPayload;
+    const { payload } = kind$inputTokenPayload;
 
-    switch (kind_inputTokenPayload.kind) {
+    switch (kind$inputTokenPayload.kind) {
       case TokenKind.ACCESS_TOKEN: {
         const $payload = InputAccessTokenSchema.parse(payload);
 
@@ -62,28 +62,28 @@ export class TokenService {
         );
       }
       default: {
-        assertNever(kind_inputTokenPayload);
+        assertNever(kind$inputTokenPayload);
       }
     }
   }
 
   private async verifyToken(
-    accessTokenKind_stringPayload: AccessTokenKind_StringPayload,
+    accessTokenKind$stringPayload: AccessTokenKind$StringPayload,
     verifyOptions: VerifyOptions,
   ): Promise<OutputAccessTokenPayload>;
 
   private async verifyToken(
-    refreshTokenKind_stringPayload: RefreshTokenKind_StringPayload,
+    refreshTokenKind$stringPayload: RefreshTokenKind$StringPayload,
     verifyOptions: VerifyOptions,
   ): Promise<OutputRefreshTokenPayload>;
 
   private async verifyToken(
-    tokenKind_stringPayload: TokenKind_StringPayload,
+    tokenKind$stringPayload: TokenKind$StringPayload,
     verifyOptions: VerifyOptions,
   ): Promise<OutputTokenPayload> {
-    const { payload } = tokenKind_stringPayload;
+    const { payload } = tokenKind$stringPayload;
 
-    switch (tokenKind_stringPayload.kind) {
+    switch (tokenKind$stringPayload.kind) {
       case TokenKind.ACCESS_TOKEN: {
         return await this.jwtService.verifyAsync<OutputAccessTokenPayload>(
           payload,
@@ -97,7 +97,7 @@ export class TokenService {
         );
       }
       default: {
-        assertNever(tokenKind_stringPayload);
+        assertNever(tokenKind$stringPayload);
       }
     }
   }
