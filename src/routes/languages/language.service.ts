@@ -5,15 +5,12 @@ import {
   isPrismaClientUniqueConstraintError,
   throwIfHttpException,
 } from 'src/shared/helpers/helpers';
-import { LanguagesRepository } from './languages.repository';
-import {
-  CreateLanguagePayload,
-  UpdateLanguagePayload,
-} from './models/language.model';
+import { CreateLanguagePayload, UpdateLanguagePayload } from './language.model';
+import { LanguageRepository } from './language.repository';
 
 @Injectable()
-export class LanguagesService {
-  constructor(private readonly languagesRepository: LanguagesRepository) {}
+export class LanguageService {
+  constructor(private readonly languagesRepository: LanguageRepository) {}
 
   async create(createLanguagePayload: CreateLanguagePayload) {
     try {

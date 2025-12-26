@@ -6,10 +6,10 @@ import {
   LanguagePayload,
   UpdateLanguagePayload,
   UpdateLanguageSchema,
-} from './models/language.model';
+} from './language.model';
 
 @Injectable()
-export class LanguagesRepository {
+export class LanguageRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(
