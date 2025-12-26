@@ -10,11 +10,20 @@ import { LanguageRepository } from './language.repository';
 
 @Injectable()
 export class LanguageService {
-  constructor(private readonly languagesRepository: LanguageRepository) {}
+  constructor(private readonly languageRepository: LanguageRepository) {}
 
-  async create(createLanguagePayload: CreateLanguagePayload) {
+  async create({
+    createLanguagePayload,
+    createdById,
+  }: {
+    createLanguagePayload: CreateLanguagePayload;
+    createdById: number;
+  }) {
     try {
-      return await this.languagesRepository.create(createLanguagePayload);
+      return await this.languageRepository.create({
+        createLanguagePayload,
+        createdById,
+      });
     } catch (error) {
       throwIfHttpException(error);
 
@@ -32,16 +41,44 @@ export class LanguageService {
   }
 
   async findAll() {
-    return await this.languagesRepository.findAll();
+    const data = await this.languageRepository.findAll();
+
+    return {
+      data,
+      totalItems: data.length,
+    };
   }
 
-  async findUnique(id: string) {
-    return await this.languagesRepository.findUnique(id);
+  async findById(id: string) {
+    const language = await this.languageRepository.findById(id);
+
+    if (!language) {
+      throw new CustomUnprocessableEntityException([
+        {
+          message: 'Language ID không tồn tại.',
+          path: 'id',
+        },
+      ]);
+    }
+
+    return language;
   }
 
-  async update(id: string, updateLanguagePayload: UpdateLanguagePayload) {
+  async update({
+    id,
+    updateLanguagePayload,
+    updatedById,
+  }: {
+    id: string;
+    updateLanguagePayload: UpdateLanguagePayload;
+    updatedById: number;
+  }) {
     try {
-      return await this.languagesRepository.update(id, updateLanguagePayload);
+      return await this.languageRepository.update({
+        id,
+        updateLanguagePayload,
+        updatedById,
+      });
     } catch (error) {
       throwIfHttpException(error);
 
@@ -60,7 +97,10 @@ export class LanguageService {
 
   async delete(id: string) {
     try {
-      return await this.languagesRepository.delete(id);
+      // Hard delete
+      await this.languageRepository.delete(id, true);
+
+      return { message: 'Xóa Language thành công.' };
     } catch (error) {
       throwIfHttpException(error);
 
