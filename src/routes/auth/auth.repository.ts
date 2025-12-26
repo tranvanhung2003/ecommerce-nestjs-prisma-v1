@@ -24,14 +24,12 @@ import {
 } from './auth.model';
 
 // FindUniqueUser$Role
-export const FindUniqueUser$RoleSchema = z.union([
+const FindUniqueUser$RoleSchema = z.union([
   z.object({ id: z.number() }),
   z.object({ email: z.email() }),
 ]);
 
-export type FindUniqueUser$RolePayload = z.infer<
-  typeof FindUniqueUser$RoleSchema
->;
+type FindUniqueUser$RolePayload = z.infer<typeof FindUniqueUser$RoleSchema>;
 
 // ----------------------------------------------------------------------------------------------------
 
@@ -81,7 +79,7 @@ export class AuthRepository {
   async createUser(createUserPayload: CreateUserPayload): Promise<UserPayload> {
     const $createUserPayload = CreateUserSchema.parse(createUserPayload);
 
-    return this.prisma.user.create({
+    return await this.prisma.user.create({
       data: $createUserPayload,
     });
   }
@@ -91,7 +89,7 @@ export class AuthRepository {
   ): Promise<User$RolePayload> {
     const $createUserPayload = CreateUserSchema.parse(createUserPayload);
 
-    return this.prisma.user.create({
+    return await this.prisma.user.create({
       data: $createUserPayload,
       include: {
         role: true,
@@ -106,7 +104,7 @@ export class AuthRepository {
       findUniqueUser$RolePayload,
     );
 
-    return this.prisma.user.findUnique({
+    return await this.prisma.user.findUnique({
       where: $findUniqueUser$RoleSchema,
       include: {
         role: true,
@@ -120,7 +118,7 @@ export class AuthRepository {
   ): Promise<UserPayload> {
     const $updateUserPayload = UpdateUserSchema.parse(updateUserPayload);
 
-    return this.prisma.user.update({
+    return await this.prisma.user.update({
       where,
       data: $updateUserPayload,
     });
@@ -146,7 +144,7 @@ export class AuthRepository {
 
       // Nếu tồn tại, cập nhật mã OTP và thời gian hết hạn
       if (existingCode) {
-        return prisma.verificationCode.update({
+        return await prisma.verificationCode.update({
           where: { id: existingCode.id },
           data: {
             code: $createVerificationCodePayload.code,
@@ -156,7 +154,7 @@ export class AuthRepository {
       }
 
       // Nếu chưa tồn tại, tạo mới mã OTP
-      return prisma.verificationCode.create({
+      return await prisma.verificationCode.create({
         data: $createVerificationCodePayload,
       });
     });
@@ -170,7 +168,7 @@ export class AuthRepository {
     const $findUniqueVerificationCodePayload =
       FindUniqueVerificationCodeSchema.parse(findUniqueVerificationCodePayload);
 
-    return this.prisma.verificationCode.findUnique({
+    return await this.prisma.verificationCode.findUnique({
       where: $findUniqueVerificationCodePayload,
     });
   }
@@ -182,7 +180,7 @@ export class AuthRepository {
       deleteVerificationCodePayload,
     );
 
-    return this.prisma.verificationCode.delete({
+    return await this.prisma.verificationCode.delete({
       where: $deleteVerificationCodePayload,
     });
   }
@@ -227,7 +225,7 @@ export class AuthRepository {
       deleteRefreshTokenPayload,
     );
 
-    return this.prisma.refreshToken.delete({
+    return await this.prisma.refreshToken.delete({
       where: $deleteRefreshTokenPayload,
     });
   }
@@ -239,7 +237,7 @@ export class AuthRepository {
   ): Promise<DevicePayload> {
     const $createDevicePayload = CreateDeviceSchema.parse(createDevicePayload);
 
-    return this.prisma.device.create({
+    return await this.prisma.device.create({
       data: $createDevicePayload,
     });
   }
@@ -250,7 +248,7 @@ export class AuthRepository {
   ): Promise<DevicePayload> {
     const $updateDevicePayload = UpdateDeviceSchema.parse(updateDevicePayload);
 
-    return this.prisma.device.update({
+    return await this.prisma.device.update({
       where: { id: deviceId },
       data: $updateDevicePayload,
     });
