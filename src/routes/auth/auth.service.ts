@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { addMilliseconds } from 'date-fns';
 import ms from 'ms';
 import { VerificationCodeKind } from 'src/generated/prisma/enums';
@@ -30,6 +34,10 @@ import {
 } from './auth.model';
 import { AuthRepository } from './auth.repository';
 import { RolesService } from './roles.service';
+
+type LoginSuccessByOtp =
+  | { success: false; code: '' }
+  | { success: true; code: string };
 
 @Injectable()
 export class AuthService {
@@ -141,8 +149,12 @@ export class AuthService {
       ]);
     }
 
-    // Nếu là gửi OTP để quên mật khẩu thì kiểm tra email có tồn tại không
-    if (type === VerificationCodeKind.FORGOT_PASSWORD && !existUser) {
+    // Nếu là gửi OTP để quên mật khẩu hoặc đăng nhập thì kiểm tra email có tồn tại không
+    if (
+      (type === VerificationCodeKind.FORGOT_PASSWORD ||
+        type === VerificationCodeKind.LOGIN) &&
+      !existUser
+    ) {
       throw new CustomUnprocessableEntityException([
         {
           message: 'Email không tồn tại',
@@ -187,10 +199,12 @@ export class AuthService {
       user: OutputAccessTokenPayload;
     },
   ) {
+    // Kiểm tra user đã đăng nhập chưa, nếu rồi thì không cho đăng nhập nữa,
     if (compositePayload.user) {
-      throw new UnauthorizedException('Người dùng đã đăng nhập rồi');
+      throw new BadRequestException('Người dùng đã đăng nhập rồi');
     }
 
+    // Lấy thông tin user, kiểm tra user có tồn tại không, mật khẩu có đúng không
     const user = await this.authRepository.findUniqueUser$Role({
       email: compositePayload.email,
     });
@@ -218,18 +232,86 @@ export class AuthService {
       ]);
     }
 
+    // Đặt flag kiểm tra đăng nhập thành công bằng mã OTP
+    // Nếu user đăng nhập bằng mã OTP (email) thành công thì xóa mã OTP đã sử dụng
+    let loginSuccessByOtp: LoginSuccessByOtp = { success: false, code: '' };
+
+    // Nếu user đã kích hoạt 2FA thì kiểm tra mã 2FA TOTP hoặc mã OTP (email)
+    if (user.totpSecret) {
+      const { totpCode, code } = compositePayload;
+
+      // Nếu không có mã 2FA TOTP hoặc mã OTP (email) thì báo lỗi
+      if (!totpCode && !code) {
+        throw new CustomUnprocessableEntityException([
+          {
+            message: 'Vui lòng nhập mã xác thực 2FA',
+            path: 'totpCode',
+          },
+          {
+            message: 'Vui lòng nhập mã OTP',
+            path: 'code',
+          },
+        ]);
+      }
+
+      // Nếu có mã 2FA TOTP thì kiểm tra mã 2FA TOTP
+      if (totpCode) {
+        const isTotpCodeValid = this.twoFactorAuthService.verifyTotp({
+          email: user.email,
+          secret: user.totpSecret,
+          token: totpCode,
+        });
+
+        if (!isTotpCodeValid) {
+          throw new CustomUnprocessableEntityException([
+            {
+              message: 'Mã xác thực 2FA không đúng',
+              path: 'totpCode',
+            },
+          ]);
+        }
+        // Nếu không có mã 2FA TOTP mà có mã OTP (email) thì kiểm tra mã OTP (email)
+      } else if (code) {
+        await this.validateVerificationCode({
+          email: user.email,
+          code,
+          type: VerificationCodeKind.LOGIN,
+        });
+
+        loginSuccessByOtp = { success: true, code };
+      }
+    }
+
+    // Tạo device
     const device = await this.authRepository.createDevice({
       userId: user.id,
       userAgent: compositePayload.userAgent,
       ip: compositePayload.ip,
     });
 
-    const tokens = await this.generateTokens({
+    // Tạo cặp accessToken và refreshToken
+    // Đồng thời nếu đăng nhập thành công bằng mã OTP (email) thì xóa mã OTP đã sử dụng
+    const promiseTokens = this.generateTokens({
       userId: user.id,
       deviceId: device.id,
       roleId: user.roleId,
       roleName: user.role.name,
     });
+
+    const promiseDeleteOtpCode = loginSuccessByOtp
+      ? this.authRepository.deleteVerificationCode({
+          email_code_type: {
+            email: user.email,
+            code: loginSuccessByOtp.code,
+            type: VerificationCodeKind.LOGIN,
+          },
+        })
+      : Promise.resolve(null);
+
+    const [tokens, _] = await Promise.all([
+      promiseTokens,
+      promiseDeleteOtpCode,
+    ]);
 
     return tokens;
   }

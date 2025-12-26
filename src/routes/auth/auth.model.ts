@@ -139,10 +139,23 @@ export type DoRefreshTokenResponsePayload = z.infer<
 export const LoginSchema = UserSchema.pick({
   email: true,
   password: true,
-}).safeExtend({
-  totpCode: z.string().length(6).optional(), // 2FA code
-  code: z.string().length(6).optional(), // Email OTP code
-});
+})
+  .safeExtend({
+    totpCode: z.string().length(6).optional(), // 2FA code
+    code: z.string().length(6).optional(), // Email OTP code
+  })
+  .superRefine(({ totpCode, code }, ctx) => {
+    // Không gửi lên trường nào
+    // Hoặc nếu gửi thì phải gửi lên một và chỉ một trong hai trường totpCode hoặc code
+    if (totpCode && code) {
+      ctx.addIssue({
+        code: 'custom',
+        message:
+          'Phải gửi lên một và chỉ một trong hai trường totpCode hoặc code',
+        path: ['totpCode', 'code'],
+      });
+    }
+  });
 
 export type LoginPayload = z.infer<typeof LoginSchema>;
 
@@ -307,11 +320,12 @@ export const DisableTwoFactorAuthSchema = z
     code: z.string().length(6).optional(), // Email OTP code
   })
   .superRefine(({ totpCode, code }, ctx) => {
-    // Chỉ được gửi lên một trong hai trường totpCode hoặc code
+    // Phải gửi lên một và chỉ một trong hai trường totpCode hoặc code
     if ((totpCode && code) || (!totpCode && !code)) {
       ctx.addIssue({
         code: 'custom',
-        message: 'Chỉ được gửi lên một trong hai trường totpCode hoặc code',
+        message:
+          'Phải gửi lên một và chỉ một trong hai trường totpCode hoặc code',
         path: ['totpCode', 'code'],
       });
     }
