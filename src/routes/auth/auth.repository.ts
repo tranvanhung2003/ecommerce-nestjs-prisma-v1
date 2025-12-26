@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { VerificationCodeKind } from 'src/generated/prisma/enums';
 import { UserPayload } from 'src/shared/models/shared-user.model';
-import {
-  FindUniqueUserPayload,
-  FindUniqueUserSchema,
-} from 'src/shared/repositories/shared-user.repository';
 import { PrismaService } from 'src/shared/services/prisma.service';
 import z from 'zod';
 import {
@@ -26,6 +22,18 @@ import {
   User$RolePayload,
   VerificationCodePayload,
 } from './auth.model';
+
+// FindUniqueUser$Role
+export const FindUniqueUser$RoleSchema = z.union([
+  z.object({ id: z.number() }),
+  z.object({ email: z.email() }),
+]);
+
+export type FindUniqueUser$RolePayload = z.infer<
+  typeof FindUniqueUser$RoleSchema
+>;
+
+// ----------------------------------------------------------------------------------------------------
 
 // FindUniqueVerificationCode
 const FindUniqueVerificationCodeSchema = z.union([
@@ -92,14 +100,14 @@ export class AuthRepository {
   }
 
   async findUniqueUser$Role(
-    findUniqueUserPayload: FindUniqueUserPayload,
+    findUniqueUser$RolePayload: FindUniqueUser$RolePayload,
   ): Promise<User$RolePayload | null> {
-    const $findUniqueUserPayload = FindUniqueUserSchema.parse(
-      findUniqueUserPayload,
+    const $findUniqueUser$RoleSchema = FindUniqueUser$RoleSchema.parse(
+      findUniqueUser$RolePayload,
     );
 
     return this.prisma.user.findUnique({
-      where: $findUniqueUserPayload,
+      where: $findUniqueUser$RoleSchema,
       include: {
         role: true,
       },
