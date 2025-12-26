@@ -19,6 +19,7 @@ import { EmptyBodyDto } from 'src/shared/dtos/request.dto';
 import { MessageResponseDto } from 'src/shared/dtos/response.dto';
 import type { OutputAccessTokenPayload } from 'src/shared/types/jwt.type';
 import {
+  DisableTwoFactorAuthDto,
   DoRefreshTokenDto,
   DoRefreshTokenResponseDto,
   ForgotPasswordDto,
@@ -148,5 +149,18 @@ export class AuthController {
     @User('userId') userId: number,
   ) {
     return this.authService.setupTwoFactorAuth(userId);
+  }
+
+  @Post('2fa/disable')
+  @Auth()
+  @ZodSerializerDto(MessageResponseDto)
+  disableTwoFactorAuth(
+    @Body() disableTwoFactorAuthDto: DisableTwoFactorAuthDto,
+    @User('userId') userId: number,
+  ) {
+    return this.authService.disableTwoFactorAuth({
+      ...disableTwoFactorAuthDto,
+      userId,
+    });
   }
 }

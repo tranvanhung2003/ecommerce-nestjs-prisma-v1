@@ -24,6 +24,7 @@ import {
   OutputAccessTokenPayload,
 } from 'src/shared/types/jwt.type';
 import {
+  DisableTwoFactorAuthPayload,
   DoRefreshTokenPayload,
   ForgotPasswordPayload,
   LoginPayload,
@@ -38,6 +39,8 @@ import { RolesService } from './roles.service';
 type LoginSuccessByOtp =
   | { success: false; code: '' }
   | { success: true; code: string };
+
+type Disable2faByOtp = LoginSuccessByOtp;
 
 @Injectable()
 export class AuthService {
@@ -149,10 +152,12 @@ export class AuthService {
       ]);
     }
 
-    // Nếu là gửi OTP để quên mật khẩu hoặc đăng nhập thì kiểm tra email có tồn tại không
+    // Nếu là gửi OTP để: quên mật khẩu hoặc đăng nhập hoặc vô hiệu hóa 2FA
+    // Thì kiểm tra email có tồn tại không
     if (
       (type === VerificationCodeKind.FORGOT_PASSWORD ||
-        type === VerificationCodeKind.LOGIN) &&
+        type === VerificationCodeKind.LOGIN ||
+        type === VerificationCodeKind.DISABLE_2FA) &&
       !existUser
     ) {
       throw new CustomUnprocessableEntityException([
@@ -298,7 +303,7 @@ export class AuthService {
       roleName: user.role.name,
     });
 
-    const promiseDeleteOtpCode = loginSuccessByOtp
+    const promiseDeleteOtpCode = loginSuccessByOtp.success
       ? this.authRepository.deleteVerificationCode({
           email_code_type: {
             email: user.email,
@@ -515,5 +520,84 @@ export class AuthService {
       secret,
       uri,
     };
+  }
+
+  async disableTwoFactorAuth(
+    compositePayload: DisableTwoFactorAuthPayload & { userId: number },
+  ) {
+    const { totpCode, code, userId } = compositePayload;
+
+    // Lấy thông tin user, kiểm tra user có tồn tại không, xem đã kích hoạt 2FA chưa
+    const user = await this.sharedUserRepository.findUnique({ id: userId });
+
+    if (!user) {
+      throw new CustomUnprocessableEntityException([
+        {
+          message: 'Email không tồn tại',
+          path: 'email',
+        },
+      ]);
+    }
+
+    if (!user.totpSecret) {
+      throw new CustomUnprocessableEntityException([
+        {
+          message: 'TOTP chưa được kích hoạt trên tài khoản này',
+          path: 'totpCode',
+        },
+      ]);
+    }
+
+    // Đặt flag kiểm tra vô hiệu hóa 2FA thành công bằng mã OTP
+    // Nếu vô hiệu hóa 2FA bằng mã OTP (email) thành công thì xóa mã OTP đã sử dụng
+    let disable2faByOtp: Disable2faByOtp = { success: false, code: '' };
+
+    // Kiểm tra mã TOTP có hợp lệ không
+    if (totpCode) {
+      const isTotpCodeValid = this.twoFactorAuthService.verifyTotp({
+        email: user.email,
+        secret: user.totpSecret,
+        token: totpCode,
+      });
+
+      if (!isTotpCodeValid) {
+        throw new CustomUnprocessableEntityException([
+          {
+            message: 'Mã xác thực 2FA không đúng',
+            path: 'totpCode',
+          },
+        ]);
+      }
+      // Nếu không có mã TOTP thì kiểm tra mã OTP (email) có hợp lệ không
+    } else if (code) {
+      await this.validateVerificationCode({
+        email: user.email,
+        code,
+        type: VerificationCodeKind.DISABLE_2FA,
+      });
+
+      disable2faByOtp = { success: true, code };
+    }
+
+    // Cập nhật secret TOTP thành null để vô hiệu hóa 2FA
+    // Đồng thời nếu vô hiệu hóa 2FA thành công bằng mã OTP (email) thì xóa mã OTP đã sử dụng
+    const promiseSetTotpSecretNull = this.authRepository.updateUser(
+      { id: userId },
+      { totpSecret: null },
+    );
+
+    const promiseDeleteOtpCode = disable2faByOtp.success
+      ? this.authRepository.deleteVerificationCode({
+          email_code_type: {
+            email: user.email,
+            code: disable2faByOtp.code,
+            type: VerificationCodeKind.DISABLE_2FA,
+          },
+        })
+      : Promise.resolve(null);
+
+    await Promise.all([promiseSetTotpSecretNull, promiseDeleteOtpCode]);
+
+    return { message: 'Vô hiệu hóa xác thực 2FA thành công' };
   }
 }
