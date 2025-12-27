@@ -56,11 +56,14 @@ const main = async () => {
 void (async () => {
   try {
     const { createdRoleCount, adminUser } = await main();
-    console.log(`Successfully created ${createdRoleCount} roles.`);
-    console.log(`Admin user created with email: ${adminUser.email}`);
+
+    console.log(`Tạo thành công ${createdRoleCount} vai trò.`);
+    console.log(`Người dùng admin đã được tạo với email: ${adminUser.email}`);
+
     process.exit(0);
   } catch (error) {
-    console.error('Error during seeding:', error);
+    console.error('Lỗi trong quá trình khởi tạo vai trò:', error);
+
     process.exit(1);
   }
 })();
