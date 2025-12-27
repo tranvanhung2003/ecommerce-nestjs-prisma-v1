@@ -2,10 +2,10 @@ import { oauth2_v2 } from 'googleapis';
 import {
   Device,
   RefreshToken,
-  Role,
   VerificationCode,
   VerificationCodeKind,
 } from 'src/generated/prisma/client';
+import { RoleSchema } from 'src/shared/models/shared-role.model';
 import { UserSchema } from 'src/shared/models/shared-user.model';
 import z from 'zod';
 
@@ -230,22 +230,6 @@ export type CreateDevicePayload = z.infer<typeof CreateDeviceSchema>;
 export const UpdateDeviceSchema = CreateDeviceSchema.partial();
 
 export type UpdateDevicePayload = z.infer<typeof UpdateDeviceSchema>;
-
-// Role
-export const RoleSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  description: z.string(),
-  isActive: z.boolean(),
-  createdById: z.number().nullable(),
-  updatedById: z.number().nullable(),
-  deletedById: z.number().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-  deletedAt: z.date().nullable(),
-}) satisfies z.ZodType<Role>;
-
-export type RolePayload = z.infer<typeof RoleSchema>;
 
 // User$Role
 export const User$RoleSchema = UserSchema.safeExtend({

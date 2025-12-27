@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { RoleName } from 'src/shared/constants/role.constant';
+import { RolePayload } from 'src/shared/models/shared-role.model';
 import { PrismaService } from 'src/shared/services/prisma.service';
-import { RolePayload } from './auth.model';
 
 @Injectable()
 export class RolesService implements OnModuleInit {
