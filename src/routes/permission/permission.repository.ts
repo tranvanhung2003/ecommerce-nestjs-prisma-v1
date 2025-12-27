@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { PermissionPayload } from 'src/shared/models/shared-permission';
 import { PrismaService } from 'src/shared/services/prisma.service';
 import {
   CreatePermissionPayload,
   PermissionListResponsePayload,
-  PermissionPayload,
   PermissionQueryPayload,
   UpdatePermissionPayload,
 } from './permission.model';

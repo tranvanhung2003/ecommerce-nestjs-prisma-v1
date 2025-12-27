@@ -1,6 +1,6 @@
+import { PermissionSchema } from 'src/shared/models/shared-permission';
 import { RoleSchema } from 'src/shared/models/shared-role.model';
 import z from 'zod';
-import { PermissionSchema } from '../permission/permission.model';
 
 // Role$Permissions
 export const Role$PermissionsSchema = RoleSchema.safeExtend({
