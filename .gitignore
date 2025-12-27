@@ -57,4 +57,4 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Custom
 /src/generated/prisma
-client_secret.json
+/client_secret.json
