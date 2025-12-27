@@ -11,16 +11,16 @@ export class CreateLanguageDto extends createZodDto(
   CreateLanguageSchema.strict(),
 ) {}
 
-export class LanguageListResponseDto extends createZodDto(
-  LanguageListResponseSchema,
-) {}
-
-export class LanguageResponseDto extends createZodDto(LanguageResponseSchema) {}
-
 export class UpdateLanguageDto extends createZodDto(
   UpdateLanguageSchema.strict(),
 ) {}
 
 export class LanguageParamsDto extends createZodDto(
   LanguageParamsSchema.strict(),
+) {}
+
+export class LanguageResponseDto extends createZodDto(LanguageResponseSchema) {}
+
+export class LanguageListResponseDto extends createZodDto(
+  LanguageListResponseSchema,
 ) {}

@@ -7,6 +7,7 @@ export const LanguageSchema = z.object({
   name: z.string().max(500),
   createdById: z.number().nullable(),
   updatedById: z.number().nullable(),
+  deletedById: z.number().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
   deletedAt: z.date().nullable(),
@@ -22,21 +23,6 @@ export const CreateLanguageSchema = LanguageSchema.pick({
 
 export type CreateLanguagePayload = z.infer<typeof CreateLanguageSchema>;
 
-// LanguageListResponse
-export const LanguageListResponseSchema = z.object({
-  data: z.array(LanguageSchema),
-  totalItems: z.number(),
-});
-
-export type LanguageListResponsePayload = z.infer<
-  typeof LanguageListResponseSchema
->;
-
-// LanguageResponse
-export const LanguageResponseSchema = LanguageSchema;
-
-export type LanguageResponsePayload = z.infer<typeof LanguageResponseSchema>;
-
 // UpdateLanguage
 export const UpdateLanguageSchema = CreateLanguageSchema.omit({
   id: true,
@@ -50,3 +36,18 @@ export const LanguageParamsSchema = z.object({
 });
 
 export type LanguageParamsPayload = z.infer<typeof LanguageParamsSchema>;
+
+// LanguageResponse
+export const LanguageResponseSchema = LanguageSchema;
+
+export type LanguageResponsePayload = z.infer<typeof LanguageResponseSchema>;
+
+// LanguageListResponse
+export const LanguageListResponseSchema = z.object({
+  data: z.array(LanguageSchema),
+  totalItems: z.number(),
+});
+
+export type LanguageListResponsePayload = z.infer<
+  typeof LanguageListResponseSchema
+>;
