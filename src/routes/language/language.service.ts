@@ -30,7 +30,7 @@ export class LanguageService {
       if (isPrismaClientUniqueConstraintError(error)) {
         throw new CustomUnprocessableEntityException([
           {
-            message: 'Language ID đã tồn tại.',
+            message: 'Language đã tồn tại.',
             path: 'id',
           },
         ]);
@@ -55,7 +55,7 @@ export class LanguageService {
     if (!language) {
       throw new CustomUnprocessableEntityException([
         {
-          message: 'Language ID không tồn tại.',
+          message: 'Language không tồn tại.',
           path: 'id',
         },
       ]);
@@ -85,7 +85,7 @@ export class LanguageService {
       if (isPrismaClientNotFoundError(error)) {
         throw new CustomUnprocessableEntityException([
           {
-            message: 'Language ID không tồn tại.',
+            message: 'Language không tồn tại.',
             path: 'id',
           },
         ]);
@@ -107,7 +107,7 @@ export class LanguageService {
       if (isPrismaClientNotFoundError(error)) {
         throw new CustomUnprocessableEntityException([
           {
-            message: 'Language ID không tồn tại.',
+            message: 'Language không tồn tại.',
             path: 'id',
           },
         ]);
