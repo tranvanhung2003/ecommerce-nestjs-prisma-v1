@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { RoleName } from 'src/shared/constants/role.constant';
 import { PrismaService } from 'src/shared/services/prisma.service';
+import { RolePayload } from './auth.model';
 
 @Injectable()
 export class RolesService implements OnModuleInit {
@@ -13,10 +14,14 @@ export class RolesService implements OnModuleInit {
   }
 
   private async initializeClientRoleId() {
-    const clientRole = await this.prisma.role.findUniqueOrThrow({
-      where: {
-        name: RoleName.CLIENT,
-      },
+    const clientRole: RolePayload = await this.prisma.$queryRaw`
+      SELECT * FROM "Role" WHERE name = ${RoleName.CLIENT} AND "deletedAt" IS NULL LIMIT 1;
+    `.then((roles: RolePayload[]) => {
+      if (roles.length === 0) {
+        throw new Error(`Role có tên ${RoleName.CLIENT} không tồn tại.`);
+      }
+
+      return roles[0];
     });
 
     this.clientRoleId = clientRole.id;
